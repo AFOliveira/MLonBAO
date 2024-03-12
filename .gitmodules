@@ -1,0 +1,3 @@
+[submodule "PreBuiltImages/platforms/rpi4"]
+	path = PreBuiltImages/platforms/rpi4
+	url = https://github.com/bao-project/bao-demos.git
