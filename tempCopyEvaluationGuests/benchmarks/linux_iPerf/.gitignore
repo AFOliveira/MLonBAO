@@ -1,0 +1,5 @@
+linux-build/*
+linux-v*
+buildroot-*
+result/
+result-*/
