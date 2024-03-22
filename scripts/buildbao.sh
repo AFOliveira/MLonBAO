@@ -2,23 +2,24 @@
 
 #------------------------------------------------------------------------------- Platform Setup
 export PLATFORM=qemu-aarch64-virt
-export CROSS_COMPILE=/home/afonso/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-elf/arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
+export CROSS_COMPILE=/home/afonso/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
 ################################################################################
 
 #------------------------------------------------------------------------------- Bao Config
-export BAO_SRCS=/home/afonso/baopi/wrkdir/src/bao-hypervisor
-export CONFIG_DIR=/home/afonso/baopi/wrkdir/cfgs
-export CONFIG_SETUP=qemu-aarch64-virt
-export WRKDIR_IMGS=/home/afonso/baopi/wrkdir/
+export BAO_SRCS=/home/afonso/baodemos/bao-demos/wrkdir/srcs/bao
+export CONFIG_DIR=/home/afonso/baodemos/bao-demos/wrkdir/config
+export CONFIG_SETUP=baremetal-linux
+export WRKDIR_IMGS=/home/afonso/evaluation-guests/build
 ################################################################################
-
+echo "$WRKDIR_IMGS"
 make clean -C $BAO_SRCS
 #------------------------------------------------------------------------------- Build Steps
 make -C $BAO_SRCS\
     PLATFORM=$PLATFORM\
     CONFIG_REPO=$CONFIG_DIR\
-    CONFIG=$CONFIG_SETUP
+    CONFIG=$CONFIG_SETUP\
+    CPPFLAGS=-DBAO_DEMOS_WRKDIR_IMGS=$WRKDIR_IMGS
 ################################################################################
 
 #------------------------------------------------------------------------------- Outputs
-cp $BAO_SRCS/bin/$PLATFORM/$CONFIG_SETUP/bao.bin /home/afonso/baopi/wrkdir/imgs/bao.bin
+cp $BAO_SRCS/bin/$PLATFORM/$CONFIG_SETUP/bao.bin /home/afonso/baodemos/bao-halfday/bl33.bin
