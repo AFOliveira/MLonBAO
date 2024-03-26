@@ -18,7 +18,7 @@ struct config config = {
             .entry = 0x20000000,
 
             .platform = {
-                .cpu_num = 3,
+                .cpu_num = 1,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
@@ -29,18 +29,6 @@ struct config config = {
                         .phys = 0x20000000
                     }
                 },
-
-               .ipc_num = 1,
-                .ipcs = (struct ipc[]) {
-                    {
-                        .base = 0xf0000000,
-                        .size = 0x00010000,
-                        .shmem_id = 0,
-                        .interrupt_num = 1,
-                        .interrupts = (irqid_t[]) {52}
-                    }
-                },
-
                 .dev_num = 2,
                 .devs =  (struct vm_dev_region[]) {
                     {
