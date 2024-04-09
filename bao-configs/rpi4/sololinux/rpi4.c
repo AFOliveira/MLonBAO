@@ -1,6 +1,6 @@
 #include <config.h>
 
-VM_IMAGE(linux_image, XSTR(/home/afonso/newtest/evaluation-guests/benchmarks/linux_mibench/build/linux.bin));
+VM_IMAGE(baremetal_image, XSTR(/home/afonso/newtest/evaluation-guests/benchmarks/linux_mibench/build/linux.bin));
 
 struct config config = {
     
@@ -9,13 +9,13 @@ struct config config = {
     .vmlist_size = 1,
     .vmlist = {
         { 
-	.image = {
-                .base_addr = 0x20000000,
-                .load_addr = VM_IMAGE_OFFSET(linux_image),
-                .size = VM_IMAGE_SIZE(linux_image)
+            .image = {
+                .base_addr = 0x200000,
+                .load_addr = VM_IMAGE_OFFSET(baremetal_image),
+                .size = VM_IMAGE_SIZE(baremetal_image)
             },
 
-            .entry = 0x20000000,
+            .entry = 0x200000,
 
             .platform = {
                 .cpu_num = 1,
@@ -23,21 +23,20 @@ struct config config = {
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
                     {
-                        .base = 0x20000000,
-                        .size = 0x40000000,
-                        .place_phys = true,
-                        .phys = 0x20000000
+                        .base = 0x200000,
+                        .size = 0x4000000 
                     }
                 },
+
                 .dev_num = 2,
                 .devs =  (struct vm_dev_region[]) {
-                    {
-                        /* GENET */
-                        .pa = 0xfd580000,
-                        .va = 0xfd580000,
-                        .size = 0x10000,
-                        .interrupt_num = 2,
-                        .interrupts = (irqid_t[]) {189, 190}  
+                    {   
+                        /* UART1 */
+                        .pa = 0xfe210000,
+                        .va = 0xfe215040,
+                        .size = 0x1000,
+                        .interrupt_num = 1,
+                        .interrupts = (irqid_t[]) {125}                        
                     },
                     {   
                         /* Arch timer interrupt */
@@ -57,6 +56,3 @@ struct config config = {
         }
     },
 };
-
-
-        

@@ -19,7 +19,7 @@ struct config config = {
             .entry = 0x50000000,
 
             .platform = {
-                .cpu_num = 1,
+                .cpu_num = 3,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
@@ -65,7 +65,7 @@ struct config config = {
             .entry = 0x80000000,
 
             .platform = {
-                .cpu_num = 2,
+                .cpu_num = 1,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
