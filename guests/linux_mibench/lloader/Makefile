@@ -7,7 +7,8 @@ endif
 
 ARCH=aarch64
 ifeq ($(ARCH), aarch64)
-CROSS_COMPILE=/home/afonso/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
+CROSS_COMPILE?=aarch64-none-elf-
+OPTIONS=-mcmodel=large 
 else ifeq ($(ARCH), rv64)
 CROSS_COMPILE=riscv64-unknown-elf-
 OPTIONS=-mcmodel=medany -g3
