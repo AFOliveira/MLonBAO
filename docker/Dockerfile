@@ -1,6 +1,6 @@
 # base image
 FROM ubuntu:20.04
-
+ARG DEBIAN_FRONTEND=noninteractive
 # docker image arguments
 ARG AARCH64_TOOLCHAIN_LINK=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/12.3.rel1/binrel/arm-gnu-toolchain-12.3.rel1-x86_64-aarch64-none-elf.tar.xz
 
