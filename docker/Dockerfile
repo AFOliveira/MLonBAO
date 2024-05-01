@@ -34,7 +34,8 @@ RUN apt-get update && apt-get install -y \
         cpio \
         unzip \
         rsync \
-        bc
+        bc \
+        libncurses-dev
 
 # Install python packages
 RUN pip3 install \
