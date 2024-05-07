@@ -1,40 +1,47 @@
-export ROOT_DIR=/home/afonso/evaluation-guests
+export ROOT_DIR=$(realpath .)
 export ROOTFS_DIR=$ROOT_DIR/rootfs
 export LINUX_VERSION=v6.1
-export LINUX_DIR=$ROOT_DIR/wrkdir/linux
-export BUILDROOT_DIR=$ROOT_DIR/wrkdir/buildroot
+export LINUX_DIR=$ROOT_DIR/linux
+export BUILDROOT_DIR=$ROOT_DIR/buildroot
 export BUILD_DIR=$ROOT_DIR/build
+export ARCH=aarch64
+export PLATFORM=rpi4
+export LINUX_CFG_FRAG=$(ls $ROOT_DIR/configs/base.config\
+        $ROOT_DIR/configs/$ARCH.config\
+        $ROOT_DIR/configs/$PLATFORM.config 2> /dev/null)
+export BUILDROOT_DEFCFG=$ROOT_DIR/configs/buildroot/$ARCH.config
+
 
 mkdir -p $BUILD_DIR
 
 # Buildroot rootfs
-#git clone https://github.com/buildroot/buildroot.git --depth 1 --branch 2022.11
-cd $ROOT_DIR/wrkdir/buildroot
-make qemu_aarch64_virt_defconfig
+git clone https://github.com/buildroot/buildroot.git --depth 1 --branch 2022.11
+cd buildroot
 
-cp /home/afonso/evaluation-guests/benchmarks/linux_mibench/configs/buildroot.config .config
-
-make -j$(nproc)
+make defconfig BR2_DEFCONFIG=$BUILDROOT_DEFCFG
+make
 
 # Linux Kernel
-cd $ROOT_DIR/wrkdir
-#git clone https://github.com/torvalds/linux.git --depth 1 --branch $LINUX_VERSION
-cd linux
-git apply $ROOT_DIR/patches/$LINUX_VERSION/*.patch
-export ARCH=arm64 CROSS_COMPILE=$ROOT_DIR/buildroot/output/host/bin/aarch64-linux-
-make defconfig
+cd $ROOT_DIR
+git clone https://github.com/torvalds/linux.git --depth 1 --branch $LINUX_VERSION
 
+cd $LINUX_DIR
+ARCH=arm64 CROSS_COMPILE=$ROOT_DIR/buildroot/output/host/bin/aarch64-linux- make defconfig
 export INITRAMFS_SRC=$BUILDROOT_DIR/output/images/rootfs.cpio
-cp /home/afonso/evaluation-guests/benchmarks/linux_mibench/configs/linux.config .config
+sed -i 's/CONFIG_INITRAMFS_SOURCE=""/CONFIG_INITRAMFS_SOURCE="$(INITRAMFS_SRC)"/g' .config
+ARCH=arm64 CROSS_COMPILE=$ROOT_DIR/buildroot/output/host/bin/aarch64-linux- make -j$(nproc) Image
 
-make -j$(nproc) Image
+export LINUX_OVERRIDE_SRCDIR=$LINUX_DIR
+cd $ROOT_DIR/buildroot
+make
+
 
 # Add benchmark tools to rootfs 
-# Build mibench
-cd $ROOT_DIR/benchmarks/linux_mibench
+#    Build mibench
+cd $ROOT_DIR/mibench
 ARCH=arm64 CROSS_COMPILE=$BUILDROOT_DIR/output/host/bin/aarch64-linux- \
     make
-cp -r $ROOT_DIR/benchmarks/linux_mibench/mibench/build/* $ROOT_DIR/rootfs
+cp -r $ROOT_DIR/mibench/build/* $ROOT_DIR/rootfs
 
 #   Build Perf
 cd $LINUX_DIR/tools/perf/
@@ -43,20 +50,19 @@ ARCH=arm64 CROSS_COMPILE=$BUILDROOT_DIR/output/host/bin/aarch64-linux- \
 mkdir -p $ROOT_DIR/rootfs/bin/
 cp perf $ROOT_DIR/rootfs/bin/
 
-# Re-build the rootfs to incroporate the new additions to the overlay in 
-# the final rootfs, and rebuild the Linux Image to incorporate the new rootfs:
-make -C $BUILDROOT_DIR
-ARCH=arm64 CROSS_COMPILE=$BUILDROOT_DIR/output/host/bin/aarch64-linux- \
-    make -C $LINUX_DIR -j$(nproc) Image
+
+cd $BUILDROOT_DIR
+make 
+cd $LINUX_DIR
+ARCH=arm64 CROSS_COMPILE=$ROOT_DIR/buildroot/output/host/bin/aarch64-linux- make -j$(nproc) Image
 
 # Finally, compile Linux's device tree and wrapper (needs will be need it to run
 # it baremetal and over bao:
 cd $ROOT_DIR
-dtc /home/afonso/evaluation-guests/benchmarks/linux_mibench/devicetrees/linux.dts -o $BUILD_DIR/linux.dtb
-cd /home/afonso/evaluation-guests/benchmarks/linux_mibench/lloader
+dtc devicetrees/$PLATFORM/linux.dts -o $BUILD_DIR/linux.dtb
 
-export CROSS_COMPILE=/home/afonso/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
+cd $ROOT_DIR/lloader
 make ARCH=aarch64\
-   IMAGE=$LINUX_DIR/arch/arm64/boot/Image\
-   DTB=$BUILD_DIR/linux.dtb\
-   TARGET=$BUILD_DIR/linux
+    IMAGE=$LINUX_DIR/arch/arm64/boot/Image\
+    DTB=$BUILD_DIR/linux.dtb\
+    TARGET=$BUILD_DIR/linux
