@@ -46,11 +46,18 @@ RUN pip3 install \
 # Install toolchains
 RUN mkdir /opt/aarch64-toolchain && curl $AARCH64_TOOLCHAIN_LINK | tar xJ -C /opt/aarch64-toolchain --strip-components=1
 
-# Add generic non-root user
-RUN addgroup bao && adduser -disabled-password --ingroup bao bao
+# Uses "Spaceship" theme with some customization. Uses some bundled plugins and installs some more from github
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
+    -t https://github.com/denysdovhan/spaceship-prompt \
+    -p git \
+    -p ssh-agent \
+    -p https://github.com/zsh-users/zsh-autosuggestions \
+    -p https://github.com/zsh-users/zsh-completions \
+    -p https://github.com/zsh-users/zsh-syntax-highlighting
 
 # setup environment
 ENV PATH=$PATH:/opt/aarch64-toolchain/bin
 
 # default startup command
-CMD /bin/bash
+RUN chsh -s /bin/zsh root
+CMD [ "/bin/zsh" ]
