@@ -22,9 +22,9 @@
 		method = "smc";
 	};
 
-	memory@0 {	
+	memory@0 {
 		device_type = "memory";
-		reg = <0x0 0x40000000 0x0 0x10000000>;
+		reg = <0x0 0x0 0x0 0x40000000>;
 	};
 
 
@@ -127,15 +127,6 @@
 			};
 		};
 	};
-
-    bao-ipc@f0000000 {
-        compatible = "bao,ipcshmem";
-        reg = <0x0 0xf0000000 0x0 0x00010000>;
-		read-channel = <0x0 0x2000>;
-		write-channel = <0x2000 0x2000>;
-		interrupts = <0 52 1>;
-		id = <0>;
-    };
 
 	aliases {
 		ethernet0 = "/amba/ethernet@ff0e0000";
