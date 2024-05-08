@@ -8,7 +8,7 @@ val_images = np.load('validation_images.npy')
 val_labels = np.load('validation_labels.npy')
 
 # Load the TensorFlow Lite model
-interpreter = Interpreter(model_path='mnist_model.tflite')
+interpreter = Interpreter(model_path='cifar10_model.tflite')
 interpreter.allocate_tensors()
 
 # Get input and output tensors
