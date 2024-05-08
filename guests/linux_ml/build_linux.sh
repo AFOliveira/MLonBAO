@@ -10,12 +10,11 @@ export LINUX_CFG_FRAG=$(ls $ROOT_DIR/configs/base.config\
         $ROOT_DIR/configs/$ARCH.config\
         $ROOT_DIR/configs/$PLATFORM.config 2> /dev/null)
 
-export TFLITE_DIR=/home/goncalo/tensorflow
         
 export BUILDROOT_DEFCFG=$ROOT_DIR/configs/buildroot/tflite.config
 
 
-export CROSS_COMPILE=/home/goncalo/bao_hypervisor/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-elf/arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
+export CROSS_COMPILE=aarch64-none-elf-
 export WRKDIR_RPI_IMGS=$ROOT_DIR/imgs
 
 echo "------> Cleaning repositories"
