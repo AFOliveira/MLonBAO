@@ -44,6 +44,7 @@ print('Validation accuracy:', val_acc)
 # Save the validation images and labels to .npy files
 np.save('validation_images.npy', val_images)
 np.save('validation_labels.npy', val_labels)
+print (val_labels)
 
 # TensorFlow Lite conversion
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
