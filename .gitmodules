@@ -5,3 +5,7 @@
 	path = PreBuiltImages/firmware/rpi4/firmware
 	url = https://github.com/raspberrypi/firmware.git
 	branch = 1.20210201
+[submodule "bao-hypervisor"]
+	path = bao-hypervisor
+	url = git@github.com:bao-project/bao-hypervisor.git
+	branch = demo
