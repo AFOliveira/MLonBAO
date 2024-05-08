@@ -63,8 +63,6 @@ make ARCH=aarch64\
 
 echo "------> Copying to final destination"
 
-cp $BUILD_DIR/linux.bin $WRKDIR_RPI_IMGS/linux.bin
-cp $BUILD_DIR/linux.dtb $WRKDIR_RPI_IMGS/linux.dtb
-cp $BUILD_DIR/linux.elf $WRKDIR_RPI_IMGS/linux.elf
-
-ls $WRKDIR_RPI_IMGS
+cp $BUILD_DIR/linux.bin $ROOT_DIR/wrkdir/imgs/linux.bin
+cp $BUILD_DIR/linux.dtb $ROOT_DIR/wrkdir/imgs/linux.dtb
+cp $BUILD_DIR/linux.elf $ROOT_DIR/wrkdir/imgs/linux.elf
