@@ -24,7 +24,8 @@ def run_inference(interpreter, input_data):
 
 # Evaluate the model on the validation dataset
 correct_predictions = 0
-for i in range(len(val_images)):
+total_images = len(val_images)  # Ensuring the total count is a scalar integer
+for i in range(total_images):
     input_data = np.expand_dims(val_images[i], axis=0).astype(np.float32)
     start_time = perf_counter()  # Start timing
     prediction = run_inference(interpreter, input_data)
@@ -33,6 +34,6 @@ for i in range(len(val_images)):
     predicted_label = np.argmax(prediction)
     correct_predictions += (predicted_label == val_labels[i])
 
-# Calculate the accuracy
-accuracy = correct_predictions / len(val_labels)
+# Calculate the accuracy and ensure it is a float
+accuracy = float(correct_predictions) / total_images
 print(f'TFLite model accuracy: {accuracy:.4f}')
