@@ -5,7 +5,7 @@ export LINUX_DIR=$ROOT_DIR/linux
 export BUILDROOT_DIR=$ROOT_DIR/buildroot
 export BUILD_DIR=$ROOT_DIR/build
 export ARCH=aarch64
-export PLATFORM=rpi4
+export PLATFORM=zcu104
 export LINUX_CFG_FRAG=$(ls $ROOT_DIR/configs/base.config\
         $ROOT_DIR/configs/$ARCH.config\
         $ROOT_DIR/configs/$PLATFORM.config 2> /dev/null)
@@ -17,19 +17,12 @@ export BUILDROOT_DEFCFG=$ROOT_DIR/configs/buildroot/tflite.config
 export CROSS_COMPILE=aarch64-none-elf-
 export WRKDIR_RPI_IMGS=$ROOT_DIR/imgs
 
-echo "------> Cleaning repositories"
-
-#make clean -C $ROOT_DIR/linux 
-#make clean -C $ROOT_DIR/buildroot 
-#make clean -C $ROOT_DIR/lloader 
-
-
 mkdir -p $BUILD_DIR
 
 echo "------> Creating Buildroot"
 
 # Buildroot rootfs
-#git clone https://github.com/buildroot/buildroot.git --depth 1 --branch 2022.11
+git clone https://github.com/buildroot/buildroot.git --depth 1 --branch 2022.11
 cd $ROOT_DIR/buildroot
 
 make defconfig BR2_DEFCONFIG=$BUILDROOT_DEFCFG
@@ -38,11 +31,10 @@ echo "------> Creating Linux"
 
 # Linux Kernel
 cd $ROOT_DIR
-#git clone https://github.com/torvalds/linux.git --depth 1 --branch $LINUX_VERSION
+git clone https://github.com/torvalds/linux.git --depth 1 --branch $LINUX_VERSION
 
 export LINUX_OVERRIDE_SRCDIR=$LINUX_DIR
 cd $ROOT_DIR/buildroot
-make menuconfig
 make linux-reconfigure all
 
 #   Build Perf
