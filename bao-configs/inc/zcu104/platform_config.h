@@ -1,10 +1,10 @@
-#define LINUX_BASE_ADDR             0x40000000
-#define LINUX_ENTRY                 0x40000000
+#define LINUX_BASE_ADDR             0x00200000
+#define LINUX_ENTRY                 0x00200000
 #define LINUX_CPU_NUM               1
 #define LINUX_CPU_AFFIN             0b0001
 #define LINUX_MEM_REG_NUM           1
-#define LINUX_MEM_BASE              0x40000000
-#define LINUX_MEM_SIZE              0x10000000
+#define LINUX_MEM_BASE              0x00000000
+#define LINUX_MEM_SIZE              0x40000000
 #define LINUX_CACHE_COLORS          0b00001111
 
 // Devices
