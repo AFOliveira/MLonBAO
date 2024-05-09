@@ -35,7 +35,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # Train the model
-model.fit(train_images, train_labels, epochs=10, validation_data=(val_images, val_labels))
+model.fit(train_images, train_labels, epochs=5, validation_data=(val_images, val_labels))
 
 # Evaluate the model on the validation set
 val_loss, val_acc = model.evaluate(val_images, val_labels)

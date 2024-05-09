@@ -103,8 +103,7 @@ uint32_t xil_uart_getc(Xil_Uart* uart)
 
     // Chose one of the following: (Trigger Level or Not Empty)
     /* Wait until RxFIFO is filled up to the trigger level */
-    while (!uart->ch_status & UART_CH_STATUS_RTRIG)
-        ;
+    while (!uart->ch_status & UART_CH_STATUS_RTRIG);
     /* Wait until RxFIFO is not empty */
     // while(!uart->ch_status & UART_CH_STATUS_REMPTY);
 

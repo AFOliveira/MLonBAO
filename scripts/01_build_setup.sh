@@ -34,7 +34,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -59,7 +59,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -68,7 +68,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
             make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_SRC/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
@@ -92,7 +92,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -119,7 +119,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -128,7 +128,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
             make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_SRC/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"

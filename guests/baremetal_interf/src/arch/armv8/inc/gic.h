@@ -333,4 +333,10 @@ static inline bool gic_is_priv(uint64_t int_id)
     return int_id < GIC_CPU_PRIV;
 }
 
+extern volatile gicc_t *gicc;
+
+static inline void gic_eoi(uint64_t id) {
+    gicc->EOIR = id;
+}
+
 #endif /* __GIC_H__ */
