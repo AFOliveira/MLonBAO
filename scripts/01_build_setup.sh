@@ -25,6 +25,28 @@ export PLATFORM=$platform
 
 # Switch between different setups
 case $setup in
+    "bare+cc")
+        echo "Building setup 0:"
+        echo "Guests:"
+        echo "  - Baremetal+CC"
+        echo " "
+
+        if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
+            echo "Building Baremetal guest..."
+            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+        fi
+
+        echo "Baremetal guest built successfully!"
+
+        echo "Building Bao..."
+        make -C $BAO_SRCS\
+            PLATFORM=$PLATFORM\
+            CONFIG_REPO=$BAO_CFGS\
+            CONFIG=interf
+        
+        cp $BAO_SRCS/bin/$PLATFORM/interf/bao.bin $WRKDIR_IMGS
+    ;;
     "solo")
         echo "Building setup 1:"
         echo "Guests:"
