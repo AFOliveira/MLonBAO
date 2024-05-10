@@ -6,7 +6,7 @@
 #define LINUX_MEM_BASE              0x20000000
 #define LINUX_MEM_SIZE              0x40000000
 #define LINUX_MEM_PHYS              0x20000000
-#define LINUX_CACHE_COLORS          0b0011
+#define LINUX_CACHE_COLORS          0b0001
 
 // Devices
 #define LINUX_DEV_NUM               2

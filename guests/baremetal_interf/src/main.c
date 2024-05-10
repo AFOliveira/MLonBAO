@@ -31,32 +31,38 @@
 
 #define TIMER_PER   (1)
 #define TIMER_INTERVAL (TIME_US(TIMER_PER))
-#define NUM_SAMPLES  (200)
+#define NUM_SAMPLES  (100)
 #define NUM_WARMUPS  (100)
 #define COL_SIZE        20   
 #define SAMPLE_FORMAT   "%" XSTR(COL_SIZE) "d"
 #define HEADER_FORMAT   "%" XSTR(COL_SIZE) "s"
 #define MAX_ITER    1000
 #define PMU_PARAMS  (6)
+
 volatile size_t sample_count;
 uint64_t next_tick;
 uint64_t curr_time;
 
-unsigned long irqlat_samples[NUM_SAMPLES];
-unsigned long irqlat_end_samples[NUM_SAMPLES];
-unsigned long exec_time_samples[NUM_SAMPLES];
-
-#define L1_CACHE_SIZE   (512*1024)
+#define N_CORES (1)
+#define L1_CACHE_SIZE   (333*1024)
+#define L2_CACHE_SIZE   (1024*1024)
+//#define BUFFER_SIZE   (333*1024)
 #define CACHE_LINE_SIZE (64)
-volatile uint8_t cache_l1[L1_CACHE_SIZE] __attribute__((aligned(L1_CACHE_SIZE)));
+
+volatile uint8_t cache_l1[N_CORES][L1_CACHE_SIZE] __attribute__((aligned(L2_CACHE_SIZE)));
+volatile uint64_t exec_time_samples[NUM_SAMPLES];
+
+
+spinlock_t print_lock = SPINLOCK_INITVAL;
 
 
 const size_t sample_events[] = {
-    L2D_CACHE,
+    L1D_CACHE_REFILL,
+    L1D_CACHE,
     L2D_CACHE_REFILL,
-
+    L2D_CACHE,
+    MEM_ACCESS,
     BUS_ACCESS,
-    BUS_CYCLES,
 };
 
 const size_t sample_events_size = sizeof(sample_events)/sizeof(size_t);
@@ -72,10 +78,10 @@ void pmu_setup_counters(size_t n, const size_t events[]){
     pmu_cycle_enable(true);
 }
 
-void pmu_sample() {
-    size_t n = pmu_num_counters();
+void pmu_sample(size_t sample_idx) {
+    size_t n = PMU_PARAMS;
     for(int i = 0; i < n; i++){
-        pmu_samples[i][sample_count] = pmu_counter_get(i);
+        pmu_samples[i][sample_idx] = pmu_counter_get(i);
     }
 }
 
@@ -108,11 +114,11 @@ static inline void pmu_print_samples(size_t i) {
     //printf(SAMPLE_FORMAT, pmu_samples[31][i]);
 }
 
-void print_samples_latency() {
+void print_samples_latency(uint64_t cpu_id) {
 
     printf("--------------------------------\n");
     printf(HEADER_FORMAT, "sample");
-    printf(HEADER_FORMAT, "execution_cycles");
+    printf(HEADER_FORMAT, "execution cycles");
     pmu_print_header();
     printf("\n");
 
@@ -128,64 +134,87 @@ void print_samples_latency() {
 
 void timer_handler(unsigned id){
 
-    timer_disable();
+    timer_disable();    
     next_tick = timer_set(TIMER_INTERVAL);
-    asm volatile("ic iallu\n\t");
+
+    sample_count++;
+    if(sample_count >= (1000000/TIMER_PER))
+    {
+        spin_lock(&print_lock);
+        printf("timer IRQ...\n");
+        spin_unlock(&print_lock);
+
+        sample_count = 0;
+    }
 }
 
-void warmup_caches()
+void dummy_cache_pmu(uint8_t cpu_id)
 {
-    for(int warm_samp = 0; warm_samp< NUM_WARMUPS; warm_samp++)
-        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-                cache_l1[i] = i;
+    volatile uint64_t initial_cycle = 0;
+    volatile uint64_t final_cycle = 0;
+    volatile uint64_t exec_cycles = 0;
+
+    pmu_setup(0,PMU_PARAMS);
+    volatile size_t counter =0;
+    
+    while(1){
+        pmu_reset();
+        initial_cycle = pmu_cycle_get();
+        for(size_t it_id = 0; it_id < MAX_ITER; it_id++){
+            for (size_t j = 0; j < L1_CACHE_SIZE; j+= CACHE_LINE_SIZE) {
+                cache_l1[cpu_id][j] = j;
             }
         }
+        final_cycle = pmu_cycle_get();
+        pmu_sample(counter);
+        exec_cycles = final_cycle - initial_cycle;
+        exec_time_samples[counter] = exec_cycles;
+        counter++;
+
+        if(counter==NUM_SAMPLES){
+            printf("CPU %d\n", cpu_id);
+            print_samples_latency(cpu_id);
+            counter=0;
+        }
+        
+    }
+}
+
+void dummy_cache(uint8_t cpu_id)
+{
+    uint64_t initial_cycle = 0;
+    uint64_t final_cycle = 0;
+    uint64_t exec_cycles = 0;
+
+    sample_count=0;
+    
+    while(1){
+        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
+            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
+                cache_l1[cpu_id][i] = i;
+            }
+        }
+        sample_count++;
+
+        if(sample_count==NUM_SAMPLES){
+            sample_count=0;
+        }
+        
+    }
 }
 
 void main(void){
+    uint64_t initial_cycle = 0;
+    uint64_t final_cycle = 0;
+    uint64_t exec_cycles = 0;
+    
+    uint64_t cpu_id = get_cpuid();
 
-    if(!cpu_is_master()) {
-        return;
-    }
+    spin_lock(&print_lock);
+    printf("Core %d is up\n", cpu_id);
+    spin_unlock(&print_lock);
 
-    unsigned long initial_cycle = 0;
-    unsigned long final_cycle = 0;
-    unsigned long exec_cycles = 0;
-
-
-    while(1) {
-        //printf("Press 's' to start...\n");
-        //while(uart_getchar() != 's');
-
-        
-
-        warmup_caches();
-        size_t i = 0;
-        while(i < sample_events_size){
-
-            sample_count = 0;
-            pmu_setup(i, sample_events_size - i);
-
-            while(sample_count < NUM_SAMPLES) {
-                pmu_reset();
-                initial_cycle = pmu_cycle_get();
-                for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-                    for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-                        cache_l1[i] = i;
-                    }
-                }
-                final_cycle = pmu_cycle_get();
-                pmu_sample();
-                exec_cycles = final_cycle - initial_cycle;
-                exec_time_samples[sample_count] = exec_cycles;
-                sample_count++;
-            }
-        
-            i += pmu_num_counters();
-            print_samples_latency();
-        }
-    }
+    dummy_cache(cpu_id);
 }
 
 

@@ -4,7 +4,8 @@ export WRKDIR_IMGS=$WRKDIR/imgs
 
 export GUESTS_DIR=$ROOT_DIR/guests
 export LINUX_GUEST_DIR=$GUESTS_DIR/linux_ml
-export BAREMETAL_GUEST_DIR=$GUESTS_DIR/baremetal_interf
+export BAREMETAL_INTERF_GUEST_DIR=$GUESTS_DIR/baremetal_interf
+export BAREMETAL_INSTR_GUEST_DIR=$GUESTS_DIR/baremetal_instr
 
 export BAO_SRCS=$ROOT_DIR/bao-hypervisor
 export BAO_CFGS=$ROOT_DIR/bao-configs
@@ -33,13 +34,15 @@ case $setup in
 
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
-            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            make -C $BAREMETAL_INSTR_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INSTR_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
 
         echo "Building Bao..."
+        make -C $BAO_SRCS clean
+        
         make -C $BAO_SRCS\
             PLATFORM=$PLATFORM\
             CONFIG_REPO=$BAO_CFGS\
@@ -89,8 +92,8 @@ case $setup in
 
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
-            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            make -C $BAREMETAL_INTERF_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INTERF_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
@@ -149,8 +152,8 @@ case $setup in
 
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
-            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            make -C $BAREMETAL_INTERF_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INTERF_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
