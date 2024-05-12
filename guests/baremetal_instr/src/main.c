@@ -46,9 +46,14 @@ unsigned long irqlat_samples[NUM_SAMPLES];
 unsigned long irqlat_end_samples[NUM_SAMPLES];
 unsigned long exec_time_samples[NUM_SAMPLES];
 
-#define L1_CACHE_SIZE   (1024*1024)
+#define L2_CACHE_SIZE   (1024*1024)
+#define NUM_SUBSETS     (16)
+#define SUBSET_SIZE     (L2_CACHE_SIZE/NUM_SUBSETS)
 #define CACHE_LINE_SIZE (64)
-volatile uint8_t cache_l1[L1_CACHE_SIZE] __attribute__((aligned(L1_CACHE_SIZE)));
+
+
+volatile uint8_t cache_l2[NUM_SUBSETS][SUBSET_SIZE]__attribute__((aligned(L2_CACHE_SIZE)));
+// volatile uint8_t cache_l1[L1_CACHE_SIZE] __attribute__((aligned(L1_CACHE_SIZE)));
 
 
 const size_t sample_events[] = {
@@ -136,9 +141,9 @@ void timer_handler(unsigned id){
 void warmup_caches()
 {
     for(int warm_samp = 0; warm_samp< NUM_WARMUPS; warm_samp++)
-        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-                cache_l1[i] = i;
+        for(int i=0; i<NUM_SUBSETS; i++){
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+                cache_l2[i][j] = j;
             }
         }
 }
@@ -153,12 +158,13 @@ void main(void){
     unsigned long final_cycle = 0;
     unsigned long exec_cycles = 0;
 
+    int num_acc_subsets = 10;
 
     while(1) {
         printf("Press 's' to start...\n");
         while(uart_getchar() != 's');
 
-        
+        printf("\nTesting %d/%d subsets\n", num_acc_subsets, NUM_SUBSETS);        
 
         warmup_caches();
         size_t i = 0;
@@ -171,8 +177,10 @@ void main(void){
                 pmu_reset();
                 initial_cycle = pmu_cycle_get();
                 for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-                    for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-                        cache_l1[i] = i;
+                    for(int i=0; i<num_acc_subsets; i++){
+                        for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+                            cache_l2[i][j] = j;
+                        }
                     }
                 }
                 final_cycle = pmu_cycle_get();

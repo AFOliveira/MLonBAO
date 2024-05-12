@@ -121,7 +121,7 @@ master_cpu: .8byte 0x0
 master_cpu_set: .8byte 0x0
 .popsection
     adr     x1, master_cpu_set
-   800d4:	100b0861 	adr	x1, 961e0 <master_cpu_set>
+   800d4:	100b08e1 	adr	x1, 961f0 <master_cpu_set>
     mov     x2, 1
    800d8:	d2800022 	mov	x2, #0x1                   	// #1
 1:
@@ -134,7 +134,7 @@ master_cpu_set: .8byte 0x0
     cbnz    w3, 1b
    800e8:	35ffffa3 	cbnz	w3, 800dc <_enter_el1+0x50>
     adr     x1, master_cpu
-   800ec:	100b0761 	adr	x1, 961d8 <master_cpu>
+   800ec:	100b07e1 	adr	x1, 961e8 <master_cpu>
     str     x0, [x1]
    800f0:	f9000020 	str	x0, [x1]
 
@@ -150,7 +150,7 @@ wait_flag:
     .popsection
 
     adr x1, wait_flag
-   80100:	100b0741 	adr	x1, 961e8 <wait_flag>
+   80100:	100b07c1 	adr	x1, 961f8 <wait_flag>
     mov x2, #1
    80104:	d2800022 	mov	x2, #0x1                   	// #1
     str x2, [x1]
@@ -161,7 +161,7 @@ wait_flag:
 skip:
 1:
     adr x1, wait_flag
-   8010c:	100b06e1 	adr	x1, 961e8 <wait_flag>
+   8010c:	100b0761 	adr	x1, 961f8 <wait_flag>
     ldr x2, [x1]
    80110:	f9400022 	ldr	x2, [x1]
     cbz x2, 1b
@@ -188,9 +188,9 @@ skip:
     //TODO: other c runtime init (ctors, etc...)
 
     b _init
-   80134:	14000360 	b	80eb4 <_init>
+   80134:	14000370 	b	80ef4 <_init>
     b _exit
-   80138:	1400034e 	b	80e70 <_exit>
+   80138:	1400035e 	b	80eb0 <_exit>
 
 000000000008013c <psci_wake_up>:
 
@@ -350,7 +350,7 @@ void pmu_setup(size_t start, size_t n) {
    808c0:	aa0003e3 	mov	x3, x0
     pmu_setup_counters(n, &sample_events[start]);
    808c4:	900000a2 	adrp	x2, 94000 <__any_on>
-   808c8:	913d8042 	add	x2, x2, #0xf60
+   808c8:	913dc042 	add	x2, x2, #0xf70
 void pmu_setup(size_t start, size_t n) {
    808cc:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
    808d0:	aa0103e0 	mov	x0, x1
@@ -421,7 +421,7 @@ void print_samples_latency() {
         const char * priv = priv_code == 0xc8 ? "_el2" : 
    80968:	900000b4 	adrp	x20, 94000 <__any_on>
    8096c:	900000b9 	adrp	x25, 94000 <__any_on>
-   80970:	913d8318 	add	x24, x24, #0xf60
+   80970:	913dc318 	add	x24, x24, #0xf70
    80974:	913862f7 	add	x23, x23, #0xe18
         descr = descr ? descr : "";
    80978:	9137a2b5 	add	x21, x21, #0xde8
@@ -587,1094 +587,1076 @@ static inline uint64_t timer_set(uint64_t n)
 void warmup_caches()
 {
     for(int warm_samp = 0; warm_samp< NUM_WARMUPS; warm_samp++)
-   80ae0:	90000c02 	adrp	x2, 200000 <cache_l1>
-   80ae4:	91000042 	add	x2, x2, #0x0
-        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80ae8:	52800c84 	mov	w4, #0x64                  	// #100
-   80aec:	d2800143 	mov	x3, #0xa                   	// #10
-   80af0:	d2800000 	mov	x0, #0x0                   	// #0
-   80af4:	d503201f 	nop
-                cache_l1[i] = i;
-   80af8:	12001c01 	and	w1, w0, #0xff
-   80afc:	38206841 	strb	w1, [x2, x0]
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80b00:	91010000 	add	x0, x0, #0x40
-   80b04:	f144001f 	cmp	x0, #0x100, lsl #12
-   80b08:	54ffff81 	b.ne	80af8 <warmup_caches+0x18>  // b.any
-        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-   80b0c:	f1000463 	subs	x3, x3, #0x1
-   80b10:	54ffff01 	b.ne	80af0 <warmup_caches+0x10>  // b.any
+   80ae0:	90000c04 	adrp	x4, 200000 <cache_l2>
+   80ae4:	91000084 	add	x4, x4, #0x0
+        for(int i=0; i<NUM_SUBSETS; i++){
+   80ae8:	52800c85 	mov	w5, #0x64                  	// #100
+   80aec:	52800003 	mov	w3, #0x0                   	// #0
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+                cache_l2[i][j] = j;
+   80af0:	93707c62 	sbfiz	x2, x3, #16, #32
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80af4:	d2800000 	mov	x0, #0x0                   	// #0
+                cache_l2[i][j] = j;
+   80af8:	8b020082 	add	x2, x4, x2
+   80afc:	d503201f 	nop
+   80b00:	12001c01 	and	w1, w0, #0xff
+   80b04:	38206841 	strb	w1, [x2, x0]
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80b08:	91010000 	add	x0, x0, #0x40
+   80b0c:	f140401f 	cmp	x0, #0x10, lsl #12
+   80b10:	54ffff81 	b.ne	80b00 <warmup_caches+0x20>  // b.any
+        for(int i=0; i<NUM_SUBSETS; i++){
+   80b14:	11000463 	add	w3, w3, #0x1
+   80b18:	7100407f 	cmp	w3, #0x10
+   80b1c:	54fffea1 	b.ne	80af0 <warmup_caches+0x10>  // b.any
     for(int warm_samp = 0; warm_samp< NUM_WARMUPS; warm_samp++)
-   80b14:	71000484 	subs	w4, w4, #0x1
-   80b18:	54fffea1 	b.ne	80aec <warmup_caches+0xc>  // b.any
+   80b20:	710004a5 	subs	w5, w5, #0x1
+   80b24:	54fffe41 	b.ne	80aec <warmup_caches+0xc>  // b.any
             }
         }
 }
-   80b1c:	d65f03c0 	ret
+   80b28:	d65f03c0 	ret
+   80b2c:	00000000 	udf	#0
 
-0000000000080b20 <main>:
+0000000000080b30 <main>:
 #include <sysregs.h>
 
 extern uint64_t master_cpu;
 
 static inline uint64_t get_cpuid(){
     uint64_t cpuid = MRS(MPIDR_EL1);
-   80b20:	d53800a1 	mrs	x1, mpidr_el1
+   80b30:	d53800a1 	mrs	x1, mpidr_el1
     return cpuid & MPIDR_CPU_MASK;
 }
 
 static bool cpu_is_master() {
     return get_cpuid() == master_cpu;
-   80b24:	d00000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
+   80b34:	d00000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
 
 void main(void){
 
     if(!cpu_is_master()) {
-   80b28:	f940ec00 	ldr	x0, [x0, #472]
-   80b2c:	eb21001f 	cmp	x0, w1, uxtb
-   80b30:	54000ca1 	b.ne	80cc4 <main+0x1a4>  // b.any
+   80b38:	f940f400 	ldr	x0, [x0, #488]
+   80b3c:	eb21001f 	cmp	x0, w1, uxtb
+   80b40:	54000e21 	b.ne	80d04 <main+0x1d4>  // b.any
 void main(void){
-   80b34:	a9ba7bfd 	stp	x29, x30, [sp, #-96]!
-   80b38:	910003fd 	mov	x29, sp
-   80b3c:	a9046bf9 	stp	x25, x26, [sp, #64]
-   80b40:	9000041a 	adrp	x26, 100000 <pmu_used_counters>
-   80b44:	9100035a 	add	x26, x26, #0x0
+   80b44:	a9ba7bfd 	stp	x29, x30, [sp, #-96]!
+   80b48:	910003fd 	mov	x29, sp
+   80b4c:	a90153f3 	stp	x19, x20, [sp, #16]
+   80b50:	90000413 	adrp	x19, 100000 <pmu_used_counters>
+   80b54:	91000273 	add	x19, x19, #0x0
+   80b58:	90000414 	adrp	x20, 100000 <pmu_used_counters>
+   80b5c:	91198294 	add	x20, x20, #0x660
+   80b60:	a9025bf5 	stp	x21, x22, [sp, #32]
+   80b64:	900000b6 	adrp	x22, 94000 <__any_on>
+   80b68:	900000b5 	adrp	x21, 94000 <__any_on>
+   80b6c:	913902d6 	add	x22, x22, #0xe40
+   80b70:	913dc2b5 	add	x21, x21, #0xf70
+   80b74:	a90363f7 	stp	x23, x24, [sp, #48]
+   80b78:	900000b7 	adrp	x23, 94000 <__any_on>
+   80b7c:	9138a2f7 	add	x23, x23, #0xe28
+   80b80:	a9046bf9 	stp	x25, x26, [sp, #64]
                     }
                 }
                 final_cycle = pmu_cycle_get();
                 pmu_sample();
                 exec_cycles = final_cycle - initial_cycle;
                 exec_time_samples[sample_count] = exec_cycles;
-   80b48:	91004359 	add	x25, x26, #0x10
-void main(void){
-   80b4c:	a90153f3 	stp	x19, x20, [sp, #16]
-   80b50:	90000c13 	adrp	x19, 200000 <cache_l1>
-   80b54:	90000414 	adrp	x20, 100000 <pmu_used_counters>
-   80b58:	91000273 	add	x19, x19, #0x0
-   80b5c:	91198294 	add	x20, x20, #0x660
-   80b60:	a9025bf5 	stp	x21, x22, [sp, #32]
-   80b64:	900000b6 	adrp	x22, 94000 <__any_on>
-   80b68:	900000b5 	adrp	x21, 94000 <__any_on>
-   80b6c:	9138a2d6 	add	x22, x22, #0xe28
-   80b70:	913d82b5 	add	x21, x21, #0xf60
-   80b74:	a90363f7 	stp	x23, x24, [sp, #48]
+   80b84:	91004279 	add	x25, x19, #0x10
             pmu_setup(i, sample_events_size - i);
-   80b78:	d28000b8 	mov	x24, #0x5                   	// #5
-    MSR(PMCR_EL0, 0x1);
-   80b7c:	52800037 	mov	w23, #0x1                   	// #1
+   80b88:	d28000b8 	mov	x24, #0x5                   	// #5
+void main(void){
+   80b8c:	a90573fb 	stp	x27, x28, [sp, #80]
+   80b90:	90000c1b 	adrp	x27, 200000 <cache_l2>
+   80b94:	9100037b 	add	x27, x27, #0x0
         printf("Press 's' to start...\n");
-   80b80:	aa1603e0 	mov	x0, x22
-   80b84:	940005a7 	bl	82220 <puts>
+   80b98:	aa1703e0 	mov	x0, x23
+   80b9c:	940005a1 	bl	82220 <puts>
         while(uart_getchar() != 's');
-   80b88:	940000ee 	bl	80f40 <uart_getchar>
-   80b8c:	12001c00 	and	w0, w0, #0xff
-   80b90:	7101cc1f 	cmp	w0, #0x73
-   80b94:	54ffffa1 	b.ne	80b88 <main+0x68>  // b.any
-   80b98:	52800c83 	mov	w3, #0x64                  	// #100
-   80b9c:	f9002bfb 	str	x27, [sp, #80]
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80ba0:	d2800142 	mov	x2, #0xa                   	// #10
-   80ba4:	d503201f 	nop
-   80ba8:	d2800000 	mov	x0, #0x0                   	// #0
-   80bac:	d503201f 	nop
-                cache_l1[i] = i;
-   80bb0:	12001c01 	and	w1, w0, #0xff
-   80bb4:	38206a61 	strb	w1, [x19, x0]
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80bb8:	91010000 	add	x0, x0, #0x40
-   80bbc:	f144001f 	cmp	x0, #0x100, lsl #12
-   80bc0:	54ffff81 	b.ne	80bb0 <main+0x90>  // b.any
-        for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-   80bc4:	f1000442 	subs	x2, x2, #0x1
-   80bc8:	54ffff01 	b.ne	80ba8 <main+0x88>  // b.any
+   80ba0:	940000f8 	bl	80f80 <uart_getchar>
+   80ba4:	12001c00 	and	w0, w0, #0xff
+   80ba8:	7101cc1f 	cmp	w0, #0x73
+   80bac:	54ffffa1 	b.ne	80ba0 <main+0x70>  // b.any
+        printf("\nTesting %d/%d subsets\n", num_acc_subsets, NUM_SUBSETS);        
+   80bb0:	aa1603e0 	mov	x0, x22
+   80bb4:	52800202 	mov	w2, #0x10                  	// #16
+   80bb8:	52800141 	mov	w1, #0xa                   	// #10
+   80bbc:	94000531 	bl	82080 <printf>
+   80bc0:	52800c84 	mov	w4, #0x64                  	// #100
+        for(int i=0; i<NUM_SUBSETS; i++){
+   80bc4:	52800003 	mov	w3, #0x0                   	// #0
+                cache_l2[i][j] = j;
+   80bc8:	93707c62 	sbfiz	x2, x3, #16, #32
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80bcc:	d2800000 	mov	x0, #0x0                   	// #0
+                cache_l2[i][j] = j;
+   80bd0:	8b020362 	add	x2, x27, x2
+   80bd4:	d503201f 	nop
+   80bd8:	12001c01 	and	w1, w0, #0xff
+   80bdc:	38206841 	strb	w1, [x2, x0]
+            for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80be0:	91010000 	add	x0, x0, #0x40
+   80be4:	f140401f 	cmp	x0, #0x10, lsl #12
+   80be8:	54ffff81 	b.ne	80bd8 <main+0xa8>  // b.any
+        for(int i=0; i<NUM_SUBSETS; i++){
+   80bec:	11000463 	add	w3, w3, #0x1
+   80bf0:	7100407f 	cmp	w3, #0x10
+   80bf4:	54fffea1 	b.ne	80bc8 <main+0x98>  // b.any
     for(int warm_samp = 0; warm_samp< NUM_WARMUPS; warm_samp++)
-   80bcc:	71000463 	subs	w3, w3, #0x1
-   80bd0:	54fffe81 	b.ne	80ba0 <main+0x80>  // b.any
+   80bf8:	71000484 	subs	w4, w4, #0x1
+   80bfc:	54fffe41 	b.ne	80bc4 <main+0x94>  // b.any
         size_t i = 0;
-   80bd4:	d280001b 	mov	x27, #0x0                   	// #0
-    pmu_setup_counters(n, &sample_events[start]);
-   80bd8:	8b1b0ea1 	add	x1, x21, x27, lsl #3
-   80bdc:	cb1b0300 	sub	x0, x24, x27
-            sample_count = 0;
-   80be0:	f900075f 	str	xzr, [x26, #8]
-    pmu_setup_counters(n, &sample_events[start]);
-   80be4:	97ffff07 	bl	80800 <pmu_setup_counters>
-    unsigned long pmcr = MRS(PMCR_EL0);
-   80be8:	d53b9c00 	mrs	x0, pmcr_el0
-    MSR(PMCR_EL0, pmcr | 0x6);
-   80bec:	b27f0400 	orr	x0, x0, #0x6
-   80bf0:	d51b9c00 	msr	pmcr_el0, x0
+   80c00:	d280001c 	mov	x28, #0x0                   	// #0
     MSR(PMCR_EL0, 0x1);
-   80bf4:	d51b9c17 	msr	pmcr_el0, x23
-            while(sample_count < NUM_SAMPLES) {
-   80bf8:	f9400740 	ldr	x0, [x26, #8]
-   80bfc:	f1031c1f 	cmp	x0, #0xc7
-   80c00:	54000528 	b.hi	80ca4 <main+0x184>  // b.pmore
+   80c04:	5280003a 	mov	w26, #0x1                   	// #1
+    pmu_setup_counters(n, &sample_events[start]);
+   80c08:	8b1c0ea1 	add	x1, x21, x28, lsl #3
+   80c0c:	cb1c0300 	sub	x0, x24, x28
+            sample_count = 0;
+   80c10:	f900067f 	str	xzr, [x19, #8]
+    pmu_setup_counters(n, &sample_events[start]);
+   80c14:	97fffefb 	bl	80800 <pmu_setup_counters>
     unsigned long pmcr = MRS(PMCR_EL0);
-   80c04:	d53b9c00 	mrs	x0, pmcr_el0
+   80c18:	d53b9c00 	mrs	x0, pmcr_el0
     MSR(PMCR_EL0, pmcr | 0x6);
-   80c08:	b27f0400 	orr	x0, x0, #0x6
-   80c0c:	d51b9c00 	msr	pmcr_el0, x0
+   80c1c:	b27f0400 	orr	x0, x0, #0x6
+   80c20:	d51b9c00 	msr	pmcr_el0, x0
+    MSR(PMCR_EL0, 0x1);
+   80c24:	d51b9c1a 	msr	pmcr_el0, x26
+            while(sample_count < NUM_SAMPLES) {
+   80c28:	f9400660 	ldr	x0, [x19, #8]
+   80c2c:	f1031c1f 	cmp	x0, #0xc7
+   80c30:	540005c8 	b.hi	80ce8 <main+0x1b8>  // b.pmore
+    unsigned long pmcr = MRS(PMCR_EL0);
+   80c34:	d53b9c00 	mrs	x0, pmcr_el0
+    MSR(PMCR_EL0, pmcr | 0x6);
+   80c38:	b27f0400 	orr	x0, x0, #0x6
+   80c3c:	d51b9c00 	msr	pmcr_el0, x0
     }
 }
 
 static inline uint64_t pmu_cycle_get(){
     uint64_t val = 0;
     return MRS(PMCCNTR_EL0);
-   80c10:	d53b9d03 	mrs	x3, pmccntr_el0
-   80c14:	d2800142 	mov	x2, #0xa                   	// #10
-                    for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80c18:	d2800000 	mov	x0, #0x0                   	// #0
-   80c1c:	d503201f 	nop
-                        cache_l1[i] = i;
-   80c20:	12001c01 	and	w1, w0, #0xff
-   80c24:	38206a61 	strb	w1, [x19, x0]
-                    for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-   80c28:	91010000 	add	x0, x0, #0x40
-   80c2c:	f144001f 	cmp	x0, #0x100, lsl #12
-   80c30:	54ffff81 	b.ne	80c20 <main+0x100>  // b.any
+   80c40:	d53b9d05 	mrs	x5, pmccntr_el0
+   80c44:	d2800143 	mov	x3, #0xa                   	// #10
+                    for(int i=0; i<num_acc_subsets; i++){
+   80c48:	52800004 	mov	w4, #0x0                   	// #0
+                            cache_l2[i][j] = j;
+   80c4c:	93707c82 	sbfiz	x2, x4, #16, #32
+                        for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80c50:	d2800000 	mov	x0, #0x0                   	// #0
+                            cache_l2[i][j] = j;
+   80c54:	8b020362 	add	x2, x27, x2
+   80c58:	12001c01 	and	w1, w0, #0xff
+   80c5c:	38206841 	strb	w1, [x2, x0]
+                        for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+   80c60:	91010000 	add	x0, x0, #0x40
+   80c64:	f140401f 	cmp	x0, #0x10, lsl #12
+   80c68:	54ffff81 	b.ne	80c58 <main+0x128>  // b.any
+                    for(int i=0; i<num_acc_subsets; i++){
+   80c6c:	11000484 	add	w4, w4, #0x1
+   80c70:	7100289f 	cmp	w4, #0xa
+   80c74:	54fffec1 	b.ne	80c4c <main+0x11c>  // b.any
                 for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-   80c34:	f1000442 	subs	x2, x2, #0x1
-   80c38:	54ffff01 	b.ne	80c18 <main+0xf8>  // b.any
-   80c3c:	d53b9d01 	mrs	x1, pmccntr_el0
+   80c78:	f1000463 	subs	x3, x3, #0x1
+   80c7c:	54fffe61 	b.ne	80c48 <main+0x118>  // b.any
+   80c80:	d53b9d01 	mrs	x1, pmccntr_el0
     return (size_t) bit_extract(MRS(PMCR_EL0), PMCR_N_OFF, PMCR_N_LEN);
-   80c40:	d53b9c00 	mrs	x0, pmcr_el0
-   80c44:	d34b3c04 	ubfx	x4, x0, #11, #5
+   80c84:	d53b9c00 	mrs	x0, pmcr_el0
+   80c88:	d34b3c02 	ubfx	x2, x0, #11, #5
     for(int i = 0; i < n; i++){
-   80c48:	f275101f 	tst	x0, #0xf800
-   80c4c:	540001a0 	b.eq	80c80 <main+0x160>  // b.none
+   80c8c:	f275101f 	tst	x0, #0xf800
+   80c90:	540001a0 	b.eq	80cc4 <main+0x194>  // b.none
         pmu_samples[i][sample_count] = pmu_counter_get(i);
-   80c50:	f9400746 	ldr	x6, [x26, #8]
+   80c94:	f9400666 	ldr	x6, [x19, #8]
     MSR(PMSELR_EL0, counter);
-   80c54:	d51b9ca2 	msr	pmselr_el0, x2
+   80c98:	d51b9ca3 	msr	pmselr_el0, x3
     return MRS(PMXEVCNTR_EL0);
-   80c58:	d53b9d45 	mrs	x5, pmxevcntr_el0
-   80c5c:	937f7c40 	sbfiz	x0, x2, #1, #32
-   80c60:	8b22c000 	add	x0, x0, w2, sxtw
-   80c64:	d37df000 	lsl	x0, x0, #3
-   80c68:	8b22c000 	add	x0, x0, w2, sxtw
+   80c9c:	d53b9d44 	mrs	x4, pmxevcntr_el0
+   80ca0:	937f7c60 	sbfiz	x0, x3, #1, #32
+   80ca4:	8b23c000 	add	x0, x0, w3, sxtw
+   80ca8:	d37df000 	lsl	x0, x0, #3
+   80cac:	8b23c000 	add	x0, x0, w3, sxtw
     for(int i = 0; i < n; i++){
-   80c6c:	91000442 	add	x2, x2, #0x1
+   80cb0:	91000463 	add	x3, x3, #0x1
         pmu_samples[i][sample_count] = pmu_counter_get(i);
-   80c70:	8b000cc0 	add	x0, x6, x0, lsl #3
-   80c74:	f8207a85 	str	x5, [x20, x0, lsl #3]
+   80cb4:	8b000cc0 	add	x0, x6, x0, lsl #3
+   80cb8:	f8207a84 	str	x4, [x20, x0, lsl #3]
     for(int i = 0; i < n; i++){
-   80c78:	eb02009f 	cmp	x4, x2
-   80c7c:	54fffea1 	b.ne	80c50 <main+0x130>  // b.any
+   80cbc:	eb02007f 	cmp	x3, x2
+   80cc0:	54fffea1 	b.ne	80c94 <main+0x164>  // b.any
                 exec_time_samples[sample_count] = exec_cycles;
-   80c80:	f9400742 	ldr	x2, [x26, #8]
+   80cc4:	f9400662 	ldr	x2, [x19, #8]
                 exec_cycles = final_cycle - initial_cycle;
-   80c84:	cb030021 	sub	x1, x1, x3
+   80cc8:	cb050021 	sub	x1, x1, x5
                 sample_count++;
-   80c88:	f9400740 	ldr	x0, [x26, #8]
+   80ccc:	f9400660 	ldr	x0, [x19, #8]
                 exec_time_samples[sample_count] = exec_cycles;
-   80c8c:	f8227b21 	str	x1, [x25, x2, lsl #3]
+   80cd0:	f8227b21 	str	x1, [x25, x2, lsl #3]
                 sample_count++;
-   80c90:	91000400 	add	x0, x0, #0x1
-   80c94:	f9000740 	str	x0, [x26, #8]
+   80cd4:	91000400 	add	x0, x0, #0x1
+   80cd8:	f9000660 	str	x0, [x19, #8]
             while(sample_count < NUM_SAMPLES) {
-   80c98:	f9400740 	ldr	x0, [x26, #8]
-   80c9c:	f1031c1f 	cmp	x0, #0xc7
-   80ca0:	54fffb29 	b.ls	80c04 <main+0xe4>  // b.plast
+   80cdc:	f9400660 	ldr	x0, [x19, #8]
+   80ce0:	f1031c1f 	cmp	x0, #0xc7
+   80ce4:	54fffa89 	b.ls	80c34 <main+0x104>  // b.plast
     return (size_t) bit_extract(MRS(PMCR_EL0), PMCR_N_OFF, PMCR_N_LEN);
-   80ca4:	d53b9c00 	mrs	x0, pmcr_el0
-   80ca8:	d34b3c00 	ubfx	x0, x0, #11, #5
+   80ce8:	d53b9c00 	mrs	x0, pmcr_el0
+   80cec:	d34b3c00 	ubfx	x0, x0, #11, #5
             }
         
             i += pmu_num_counters();
-   80cac:	8b00037b 	add	x27, x27, x0
+   80cf0:	8b00039c 	add	x28, x28, x0
             print_samples_latency();
-   80cb0:	97ffff14 	bl	80900 <print_samples_latency>
+   80cf4:	97ffff03 	bl	80900 <print_samples_latency>
         while(i < sample_events_size){
-   80cb4:	f100137f 	cmp	x27, #0x4
-   80cb8:	54fff909 	b.ls	80bd8 <main+0xb8>  // b.plast
-   80cbc:	f9402bfb 	ldr	x27, [sp, #80]
-   80cc0:	17ffffb0 	b	80b80 <main+0x60>
-   80cc4:	d65f03c0 	ret
+   80cf8:	f100139f 	cmp	x28, #0x4
+   80cfc:	54fff4e8 	b.hi	80b98 <main+0x68>  // b.pmore
+   80d00:	17ffffc2 	b	80c08 <main+0xd8>
+   80d04:	d65f03c0 	ret
 	...
 
-0000000000080cd0 <irq_set_handler>:
+0000000000080d10 <irq_set_handler>:
 #include <stddef.h>
 
 irq_handler_t irq_handlers[IRQ_NUM]; 
 
 void irq_set_handler(unsigned id, irq_handler_t handler){
     if(id < IRQ_NUM)
-   80cd0:	710ffc1f 	cmp	w0, #0x3ff
-   80cd4:	54000088 	b.hi	80ce4 <irq_set_handler+0x14>  // b.pmore
+   80d10:	710ffc1f 	cmp	w0, #0x3ff
+   80d14:	54000088 	b.hi	80d24 <irq_set_handler+0x14>  // b.pmore
         irq_handlers[id] = handler;
-   80cd8:	90001402 	adrp	x2, 300000 <irqlat_end_samples>
-   80cdc:	91324042 	add	x2, x2, #0xc90
-   80ce0:	f8205841 	str	x1, [x2, w0, uxtw #3]
+   80d18:	90001402 	adrp	x2, 300000 <irqlat_end_samples>
+   80d1c:	91324042 	add	x2, x2, #0xc90
+   80d20:	f8205841 	str	x1, [x2, w0, uxtw #3]
 }
-   80ce4:	d65f03c0 	ret
-   80ce8:	d503201f 	nop
-   80cec:	d503201f 	nop
+   80d24:	d65f03c0 	ret
+   80d28:	d503201f 	nop
+   80d2c:	d503201f 	nop
 
-0000000000080cf0 <irq_handle>:
+0000000000080d30 <irq_handle>:
 
 void irq_handle(unsigned id){
-   80cf0:	2a0003e1 	mov	w1, w0
+   80d30:	2a0003e1 	mov	w1, w0
     if(id < IRQ_NUM && irq_handlers[id] != NULL)
-   80cf4:	710ffc1f 	cmp	w0, #0x3ff
-   80cf8:	540000e8 	b.hi	80d14 <irq_handle+0x24>  // b.pmore
-   80cfc:	90001402 	adrp	x2, 300000 <irqlat_end_samples>
-   80d00:	91324042 	add	x2, x2, #0xc90
-   80d04:	f8615841 	ldr	x1, [x2, w1, uxtw #3]
-   80d08:	b4000061 	cbz	x1, 80d14 <irq_handle+0x24>
+   80d34:	710ffc1f 	cmp	w0, #0x3ff
+   80d38:	540000e8 	b.hi	80d54 <irq_handle+0x24>  // b.pmore
+   80d3c:	90001402 	adrp	x2, 300000 <irqlat_end_samples>
+   80d40:	91324042 	add	x2, x2, #0xc90
+   80d44:	f8615841 	ldr	x1, [x2, w1, uxtw #3]
+   80d48:	b4000061 	cbz	x1, 80d54 <irq_handle+0x24>
         irq_handlers[id](id);
-   80d0c:	aa0103f0 	mov	x16, x1
-   80d10:	d61f0200 	br	x16
+   80d4c:	aa0103f0 	mov	x16, x1
+   80d50:	d61f0200 	br	x16
 }
-   80d14:	d65f03c0 	ret
+   80d54:	d65f03c0 	ret
 	...
 
-0000000000080d20 <_read>:
+0000000000080d60 <_read>:
 #include <cpu.h>
 #include <fences.h>
 #include <wfi.h>
 
 int _read(int file, char *ptr, int len)
 {
-   80d20:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   80d24:	910003fd 	mov	x29, sp
-   80d28:	f90013f5 	str	x21, [sp, #32]
-   80d2c:	2a0203f5 	mov	w21, w2
+   80d60:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+   80d64:	910003fd 	mov	x29, sp
+   80d68:	f90013f5 	str	x21, [sp, #32]
+   80d6c:	2a0203f5 	mov	w21, w2
     int i;
     for (i = 0; i < len; ++i)
-   80d30:	7100005f 	cmp	w2, #0x0
-   80d34:	5400014d 	b.le	80d5c <_read+0x3c>
-   80d38:	a90153f3 	stp	x19, x20, [sp, #16]
-   80d3c:	aa0103f3 	mov	x19, x1
-   80d40:	8b22c034 	add	x20, x1, w2, sxtw
-   80d44:	d503201f 	nop
+   80d70:	7100005f 	cmp	w2, #0x0
+   80d74:	5400014d 	b.le	80d9c <_read+0x3c>
+   80d78:	a90153f3 	stp	x19, x20, [sp, #16]
+   80d7c:	aa0103f3 	mov	x19, x1
+   80d80:	8b22c034 	add	x20, x1, w2, sxtw
+   80d84:	d503201f 	nop
     {
         ptr[i] = uart_getchar();
-   80d48:	9400007e 	bl	80f40 <uart_getchar>
-   80d4c:	38001660 	strb	w0, [x19], #1
+   80d88:	9400007e 	bl	80f80 <uart_getchar>
+   80d8c:	38001660 	strb	w0, [x19], #1
     for (i = 0; i < len; ++i)
-   80d50:	eb14027f 	cmp	x19, x20
-   80d54:	54ffffa1 	b.ne	80d48 <_read+0x28>  // b.any
-   80d58:	a94153f3 	ldp	x19, x20, [sp, #16]
+   80d90:	eb14027f 	cmp	x19, x20
+   80d94:	54ffffa1 	b.ne	80d88 <_read+0x28>  // b.any
+   80d98:	a94153f3 	ldp	x19, x20, [sp, #16]
     }
 
     return len;
 }
-   80d5c:	2a1503e0 	mov	w0, w21
-   80d60:	f94013f5 	ldr	x21, [sp, #32]
-   80d64:	a8c37bfd 	ldp	x29, x30, [sp], #48
-   80d68:	d65f03c0 	ret
-   80d6c:	d503201f 	nop
+   80d9c:	2a1503e0 	mov	w0, w21
+   80da0:	f94013f5 	ldr	x21, [sp, #32]
+   80da4:	a8c37bfd 	ldp	x29, x30, [sp], #48
+   80da8:	d65f03c0 	ret
+   80dac:	d503201f 	nop
 
-0000000000080d70 <_write>:
+0000000000080db0 <_write>:
 
 int _write(int file, char *ptr, int len)
 {
-   80d70:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   80d74:	910003fd 	mov	x29, sp
-   80d78:	a90153f3 	stp	x19, x20, [sp, #16]
-   80d7c:	8b22c034 	add	x20, x1, w2, sxtw
-   80d80:	f90013f5 	str	x21, [sp, #32]
-   80d84:	2a0203f5 	mov	w21, w2
+   80db0:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+   80db4:	910003fd 	mov	x29, sp
+   80db8:	a90153f3 	stp	x19, x20, [sp, #16]
+   80dbc:	8b22c034 	add	x20, x1, w2, sxtw
+   80dc0:	f90013f5 	str	x21, [sp, #32]
+   80dc4:	2a0203f5 	mov	w21, w2
     int i;
     for (i = 0; i < len; ++i)
-   80d88:	7100005f 	cmp	w2, #0x0
-   80d8c:	5400022d 	b.le	80dd0 <_write+0x60>
-   80d90:	aa0103f3 	mov	x19, x1
-   80d94:	14000005 	b	80da8 <_write+0x38>
-   80d98:	91000673 	add	x19, x19, #0x1
+   80dc8:	7100005f 	cmp	w2, #0x0
+   80dcc:	5400022d 	b.le	80e10 <_write+0x60>
+   80dd0:	aa0103f3 	mov	x19, x1
+   80dd4:	14000005 	b	80de8 <_write+0x38>
+   80dd8:	91000673 	add	x19, x19, #0x1
     {
         if (ptr[i] == '\n')
         {
             uart_putc('\r');
         }
         uart_putc(ptr[i]);
-   80d9c:	94000066 	bl	80f34 <uart_putc>
+   80ddc:	94000066 	bl	80f74 <uart_putc>
     for (i = 0; i < len; ++i)
-   80da0:	eb14027f 	cmp	x19, x20
-   80da4:	54000160 	b.eq	80dd0 <_write+0x60>  // b.none
+   80de0:	eb14027f 	cmp	x19, x20
+   80de4:	54000160 	b.eq	80e10 <_write+0x60>  // b.none
         if (ptr[i] == '\n')
-   80da8:	39400260 	ldrb	w0, [x19]
-   80dac:	7100281f 	cmp	w0, #0xa
-   80db0:	54ffff41 	b.ne	80d98 <_write+0x28>  // b.any
+   80de8:	39400260 	ldrb	w0, [x19]
+   80dec:	7100281f 	cmp	w0, #0xa
+   80df0:	54ffff41 	b.ne	80dd8 <_write+0x28>  // b.any
             uart_putc('\r');
-   80db4:	528001a0 	mov	w0, #0xd                   	// #13
-   80db8:	9400005f 	bl	80f34 <uart_putc>
+   80df4:	528001a0 	mov	w0, #0xd                   	// #13
+   80df8:	9400005f 	bl	80f74 <uart_putc>
         uart_putc(ptr[i]);
-   80dbc:	39400260 	ldrb	w0, [x19]
+   80dfc:	39400260 	ldrb	w0, [x19]
     for (i = 0; i < len; ++i)
-   80dc0:	91000673 	add	x19, x19, #0x1
+   80e00:	91000673 	add	x19, x19, #0x1
         uart_putc(ptr[i]);
-   80dc4:	9400005c 	bl	80f34 <uart_putc>
+   80e04:	9400005c 	bl	80f74 <uart_putc>
     for (i = 0; i < len; ++i)
-   80dc8:	eb14027f 	cmp	x19, x20
-   80dcc:	54fffee1 	b.ne	80da8 <_write+0x38>  // b.any
+   80e08:	eb14027f 	cmp	x19, x20
+   80e0c:	54fffee1 	b.ne	80de8 <_write+0x38>  // b.any
     }
 
     return len;
 }
-   80dd0:	a94153f3 	ldp	x19, x20, [sp, #16]
-   80dd4:	2a1503e0 	mov	w0, w21
-   80dd8:	f94013f5 	ldr	x21, [sp, #32]
-   80ddc:	a8c37bfd 	ldp	x29, x30, [sp], #48
-   80de0:	d65f03c0 	ret
+   80e10:	a94153f3 	ldp	x19, x20, [sp, #16]
+   80e14:	2a1503e0 	mov	w0, w21
+   80e18:	f94013f5 	ldr	x21, [sp, #32]
+   80e1c:	a8c37bfd 	ldp	x29, x30, [sp], #48
+   80e20:	d65f03c0 	ret
 
-0000000000080de4 <_lseek>:
+0000000000080e24 <_lseek>:
 
 int _lseek(int file, int ptr, int dir)
 {
-   80de4:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   80de8:	910003fd 	mov	x29, sp
+   80e24:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+   80e28:	910003fd 	mov	x29, sp
     errno = ESPIPE;
-   80dec:	94000485 	bl	82000 <__errno>
-   80df0:	aa0003e1 	mov	x1, x0
-   80df4:	528003a2 	mov	w2, #0x1d                  	// #29
+   80e2c:	94000475 	bl	82000 <__errno>
+   80e30:	aa0003e1 	mov	x1, x0
+   80e34:	528003a2 	mov	w2, #0x1d                  	// #29
     return -1;
 }
-   80df8:	12800000 	mov	w0, #0xffffffff            	// #-1
+   80e38:	12800000 	mov	w0, #0xffffffff            	// #-1
     errno = ESPIPE;
-   80dfc:	b9000022 	str	w2, [x1]
+   80e3c:	b9000022 	str	w2, [x1]
 }
-   80e00:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   80e04:	d65f03c0 	ret
-   80e08:	d503201f 	nop
-   80e0c:	d503201f 	nop
+   80e40:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   80e44:	d65f03c0 	ret
+   80e48:	d503201f 	nop
+   80e4c:	d503201f 	nop
 
-0000000000080e10 <_close>:
+0000000000080e50 <_close>:
 
 int _close(int file)
 {
     return -1;
 }
-   80e10:	12800000 	mov	w0, #0xffffffff            	// #-1
-   80e14:	d65f03c0 	ret
-   80e18:	d503201f 	nop
-   80e1c:	d503201f 	nop
+   80e50:	12800000 	mov	w0, #0xffffffff            	// #-1
+   80e54:	d65f03c0 	ret
+   80e58:	d503201f 	nop
+   80e5c:	d503201f 	nop
 
-0000000000080e20 <_fstat>:
+0000000000080e60 <_fstat>:
 
 int _fstat(int file, struct stat *st)
 {
     st->st_mode = S_IFCHR;
-   80e20:	52840002 	mov	w2, #0x2000                	// #8192
+   80e60:	52840002 	mov	w2, #0x2000                	// #8192
     return 0;
 }
-   80e24:	52800000 	mov	w0, #0x0                   	// #0
+   80e64:	52800000 	mov	w0, #0x0                   	// #0
     st->st_mode = S_IFCHR;
-   80e28:	b9000422 	str	w2, [x1, #4]
+   80e68:	b9000422 	str	w2, [x1, #4]
 }
-   80e2c:	d65f03c0 	ret
+   80e6c:	d65f03c0 	ret
 
-0000000000080e30 <_isatty>:
+0000000000080e70 <_isatty>:
 
 int _isatty(int fd)
 {
-   80e30:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   80e34:	910003fd 	mov	x29, sp
+   80e70:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+   80e74:	910003fd 	mov	x29, sp
     errno = ENOTTY;
-   80e38:	94000472 	bl	82000 <__errno>
-   80e3c:	aa0003e1 	mov	x1, x0
-   80e40:	52800322 	mov	w2, #0x19                  	// #25
+   80e78:	94000462 	bl	82000 <__errno>
+   80e7c:	aa0003e1 	mov	x1, x0
+   80e80:	52800322 	mov	w2, #0x19                  	// #25
     return 0;
 }
-   80e44:	52800000 	mov	w0, #0x0                   	// #0
+   80e84:	52800000 	mov	w0, #0x0                   	// #0
     errno = ENOTTY;
-   80e48:	b9000022 	str	w2, [x1]
+   80e88:	b9000022 	str	w2, [x1]
 }
-   80e4c:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   80e50:	d65f03c0 	ret
+   80e8c:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   80e90:	d65f03c0 	ret
 
-0000000000080e54 <_sbrk>:
+0000000000080e94 <_sbrk>:
 
 void* _sbrk(int increment)
 {
     extern char _heap_base;
     static char* heap_end = &_heap_base;
     char* current_heap_end = heap_end;
-   80e54:	d00000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   80e94:	d00000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
 {
-   80e58:	2a0003e1 	mov	w1, w0
+   80e98:	2a0003e1 	mov	w1, w0
     char* current_heap_end = heap_end;
-   80e5c:	f940e040 	ldr	x0, [x2, #448]
+   80e9c:	f940e840 	ldr	x0, [x2, #464]
     heap_end += increment;
-   80e60:	8b21c001 	add	x1, x0, w1, sxtw
-   80e64:	f900e041 	str	x1, [x2, #448]
+   80ea0:	8b21c001 	add	x1, x0, w1, sxtw
+   80ea4:	f900e841 	str	x1, [x2, #464]
     return current_heap_end;
 }
-   80e68:	d65f03c0 	ret
-   80e6c:	d503201f 	nop
+   80ea8:	d65f03c0 	ret
+   80eac:	d503201f 	nop
 
-0000000000080e70 <_exit>:
+0000000000080eb0 <_exit>:
     DMB(ish);
-   80e70:	d5033bbf 	dmb	ish
-   80e74:	d503201f 	nop
+   80eb0:	d5033bbf 	dmb	ish
+   80eb4:	d503201f 	nop
 #ifndef WFI_H
 #define WFI_H
 
 static inline void wfi(){
     asm volatile("wfi\n\t" ::: "memory");
-   80e78:	d503207f 	wfi
-   80e7c:	17ffffff 	b	80e78 <_exit+0x8>
+   80eb8:	d503207f 	wfi
+   80ebc:	17ffffff 	b	80eb8 <_exit+0x8>
 
-0000000000080e80 <_getpid>:
+0000000000080ec0 <_getpid>:
 }
 
 int _getpid(void)
 {
   return 1;
 }
-   80e80:	52800020 	mov	w0, #0x1                   	// #1
-   80e84:	d65f03c0 	ret
-   80e88:	d503201f 	nop
-   80e8c:	d503201f 	nop
+   80ec0:	52800020 	mov	w0, #0x1                   	// #1
+   80ec4:	d65f03c0 	ret
+   80ec8:	d503201f 	nop
+   80ecc:	d503201f 	nop
 
-0000000000080e90 <_kill>:
+0000000000080ed0 <_kill>:
 
 int _kill(int pid, int sig)
 {
-   80e90:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   80e94:	910003fd 	mov	x29, sp
+   80ed0:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+   80ed4:	910003fd 	mov	x29, sp
     errno = EINVAL;
-   80e98:	9400045a 	bl	82000 <__errno>
-   80e9c:	aa0003e1 	mov	x1, x0
-   80ea0:	528002c2 	mov	w2, #0x16                  	// #22
+   80ed8:	9400044a 	bl	82000 <__errno>
+   80edc:	aa0003e1 	mov	x1, x0
+   80ee0:	528002c2 	mov	w2, #0x16                  	// #22
     return -1;
 }
-   80ea4:	12800000 	mov	w0, #0xffffffff            	// #-1
+   80ee4:	12800000 	mov	w0, #0xffffffff            	// #-1
     errno = EINVAL;
-   80ea8:	b9000022 	str	w2, [x1]
+   80ee8:	b9000022 	str	w2, [x1]
 }
-   80eac:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   80eb0:	d65f03c0 	ret
+   80eec:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   80ef0:	d65f03c0 	ret
 
-0000000000080eb4 <_init>:
+0000000000080ef4 <_init>:
 
 static bool init_done = false;
 static spinlock_t init_lock = SPINLOCK_INITVAL;
 
 __attribute__((weak))
 void _init(){
-   80eb4:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+   80ef4:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
 static inline void spin_lock(spinlock_t* lock){
 
     uint32_t const ONE = 1;
     spinlock_t tmp;
 
     asm volatile (
-   80eb8:	d0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
-   80ebc:	52800021 	mov	w1, #0x1                   	// #1
-   80ec0:	910003fd 	mov	x29, sp
-   80ec4:	f9000bf3 	str	x19, [sp, #16]
-   80ec8:	91324013 	add	x19, x0, #0xc90
-   80ecc:	885ffe62 	ldaxr	w2, [x19]
-   80ed0:	35ffffe2 	cbnz	w2, 80ecc <_init+0x18>
-   80ed4:	88027e61 	stxr	w2, w1, [x19]
-   80ed8:	35ffffa2 	cbnz	w2, 80ecc <_init+0x18>
+   80ef8:	d0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
+   80efc:	52800021 	mov	w1, #0x1                   	// #1
+   80f00:	910003fd 	mov	x29, sp
+   80f04:	f9000bf3 	str	x19, [sp, #16]
+   80f08:	91324013 	add	x19, x0, #0xc90
+   80f0c:	885ffe62 	ldaxr	w2, [x19]
+   80f10:	35ffffe2 	cbnz	w2, 80f0c <_init+0x18>
+   80f14:	88027e61 	stxr	w2, w1, [x19]
+   80f18:	35ffffa2 	cbnz	w2, 80f0c <_init+0x18>
 
     spin_lock(&init_lock);
     if(!init_done) {
-   80edc:	39401260 	ldrb	w0, [x19, #4]
-   80ee0:	b9002fe2 	str	w2, [sp, #44]
-   80ee4:	340000a0 	cbz	w0, 80ef8 <_init+0x44>
+   80f1c:	39401260 	ldrb	w0, [x19, #4]
+   80f20:	b9002fe2 	str	w2, [sp, #44]
+   80f24:	340000a0 	cbz	w0, 80f38 <_init+0x44>
 
 }
 
 static inline void spin_unlock(spinlock_t* lock){
 
     asm volatile ("stlr wzr, %0\n\t" :: "Q"(*lock));
-   80ee8:	889ffe7f 	stlr	wzr, [x19]
+   80f28:	889ffe7f 	stlr	wzr, [x19]
         init_done = true;
         uart_init();
     }
     spin_unlock(&init_lock);
     
     arch_init();
-   80eec:	940000e5 	bl	81280 <arch_init>
+   80f2c:	940000e5 	bl	812c0 <arch_init>
 
     int ret = main();
-   80ef0:	97ffff0c 	bl	80b20 <main>
+   80f30:	97ffff00 	bl	80b30 <main>
     _exit(ret);
-   80ef4:	97ffffdf 	bl	80e70 <_exit>
+   80f34:	97ffffdf 	bl	80eb0 <_exit>
         init_done = true;
-   80ef8:	39001261 	strb	w1, [x19, #4]
+   80f38:	39001261 	strb	w1, [x19, #4]
         uart_init();
-   80efc:	94000005 	bl	80f10 <uart_init>
-   80f00:	17fffffa 	b	80ee8 <_init+0x34>
+   80f3c:	94000005 	bl	80f50 <uart_init>
+   80f40:	17fffffa 	b	80f28 <_init+0x34>
 	...
 
-0000000000080f10 <uart_init>:
+0000000000080f50 <uart_init>:
 #define VIRT_UART_BAUDRATE		    115200
 #define VIRT_UART_FREQ		        3000000
 
 void uart_init(){
 
     uart8250_init(VIRT_UART16550_ADDR, VIRT_UART_FREQ, VIRT_UART_BAUDRATE, 0, 4);
-   80f10:	52984002 	mov	w2, #0xc200                	// #49664
-   80f14:	5298d801 	mov	w1, #0xc6c0                	// #50880
-   80f18:	d28a0800 	mov	x0, #0x5040                	// #20544
-   80f1c:	72a00022 	movk	w2, #0x1, lsl #16
-   80f20:	72a005a1 	movk	w1, #0x2d, lsl #16
-   80f24:	f2bfc420 	movk	x0, #0xfe21, lsl #16
-   80f28:	52800084 	mov	w4, #0x4                   	// #4
-   80f2c:	52800003 	mov	w3, #0x0                   	// #0
-   80f30:	1400008c 	b	81160 <uart8250_init>
+   80f50:	52984002 	mov	w2, #0xc200                	// #49664
+   80f54:	5298d801 	mov	w1, #0xc6c0                	// #50880
+   80f58:	d28a0800 	mov	x0, #0x5040                	// #20544
+   80f5c:	72a00022 	movk	w2, #0x1, lsl #16
+   80f60:	72a005a1 	movk	w1, #0x2d, lsl #16
+   80f64:	f2bfc420 	movk	x0, #0xfe21, lsl #16
+   80f68:	52800084 	mov	w4, #0x4                   	// #4
+   80f6c:	52800003 	mov	w3, #0x0                   	// #0
+   80f70:	1400008c 	b	811a0 <uart8250_init>
 
-0000000000080f34 <uart_putc>:
+0000000000080f74 <uart_putc>:
 }
 
 void uart_putc(char c)
 {
     uart8250_putc(c);
-   80f34:	14000023 	b	80fc0 <uart8250_putc>
-   80f38:	d503201f 	nop
-   80f3c:	d503201f 	nop
+   80f74:	14000023 	b	81000 <uart8250_putc>
+   80f78:	d503201f 	nop
+   80f7c:	d503201f 	nop
 
-0000000000080f40 <uart_getchar>:
+0000000000080f80 <uart_getchar>:
 }
 
 char uart_getchar(void)
 {
-   80f40:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   80f44:	910003fd 	mov	x29, sp
+   80f80:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+   80f84:	910003fd 	mov	x29, sp
     return uart8250_getc();
-   80f48:	9400003e 	bl	81040 <uart8250_getc>
+   80f88:	9400003e 	bl	81080 <uart8250_getc>
 }
-   80f4c:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   80f50:	d65f03c0 	ret
+   80f8c:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   80f90:	d65f03c0 	ret
 
-0000000000080f54 <uart_enable_rxirq>:
+0000000000080f94 <uart_enable_rxirq>:
 
 void uart_enable_rxirq()
 {
     uart8250_enable_rx_int();
-   80f54:	14000070 	b	81114 <uart8250_enable_rx_int>
-   80f58:	d503201f 	nop
-   80f5c:	d503201f 	nop
+   80f94:	14000070 	b	81154 <uart8250_enable_rx_int>
+   80f98:	d503201f 	nop
+   80f9c:	d503201f 	nop
 
-0000000000080f60 <uart_clear_rxirq>:
+0000000000080fa0 <uart_clear_rxirq>:
 }
 
 void uart_clear_rxirq()
 {
     uart8250_interrupt_handler(); 
-   80f60:	14000055 	b	810b4 <uart8250_interrupt_handler>
+   80fa0:	14000055 	b	810f4 <uart8250_interrupt_handler>
 	...
 
-0000000000080f70 <get_reg>:
+0000000000080fb0 <get_reg>:
 static u32 uart8250_reg_width;
 static u32 uart8250_reg_shift;
 
 static volatile u32 get_reg(u32 num)
 {
 	u32 offset = num << uart8250_reg_shift;
-   80f70:	d0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
-   80f74:	91326022 	add	x2, x1, #0xc98
-   80f78:	b94c9821 	ldr	w1, [x1, #3224]
+   80fb0:	d0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
+   80fb4:	91326022 	add	x2, x1, #0xc98
+   80fb8:	b94c9821 	ldr	w1, [x1, #3224]
 
 	if (uart8250_reg_width == 1)
-   80f7c:	b9400443 	ldr	w3, [x2, #4]
+   80fbc:	b9400443 	ldr	w3, [x2, #4]
 		return readb(uart8250_base + offset);
-   80f80:	f9400442 	ldr	x2, [x2, #8]
+   80fc0:	f9400442 	ldr	x2, [x2, #8]
 	u32 offset = num << uart8250_reg_shift;
-   80f84:	1ac12004 	lsl	w4, w0, w1
+   80fc4:	1ac12004 	lsl	w4, w0, w1
 		return readb(uart8250_base + offset);
-   80f88:	1ac12000 	lsl	w0, w0, w1
+   80fc8:	1ac12000 	lsl	w0, w0, w1
 	if (uart8250_reg_width == 1)
-   80f8c:	7100047f 	cmp	w3, #0x1
-   80f90:	54000120 	b.eq	80fb4 <get_reg+0x44>  // b.none
+   80fcc:	7100047f 	cmp	w3, #0x1
+   80fd0:	54000120 	b.eq	80ff4 <get_reg+0x44>  // b.none
 	else if (uart8250_reg_width == 2)
-   80f94:	7100087f 	cmp	w3, #0x2
-   80f98:	54000060 	b.eq	80fa4 <get_reg+0x34>  // b.none
+   80fd4:	7100087f 	cmp	w3, #0x2
+   80fd8:	54000060 	b.eq	80fe4 <get_reg+0x34>  // b.none
 		return readw(uart8250_base + offset);
 	else
 		return readl(uart8250_base + offset);
-   80f9c:	b8607840 	ldr	w0, [x2, x0, lsl #2]
+   80fdc:	b8607840 	ldr	w0, [x2, x0, lsl #2]
 }
-   80fa0:	d65f03c0 	ret
+   80fe0:	d65f03c0 	ret
 		return readw(uart8250_base + offset);
-   80fa4:	d37ff800 	lsl	x0, x0, #1
-   80fa8:	78606840 	ldrh	w0, [x2, x0]
-   80fac:	12003c00 	and	w0, w0, #0xffff
+   80fe4:	d37ff800 	lsl	x0, x0, #1
+   80fe8:	78606840 	ldrh	w0, [x2, x0]
+   80fec:	12003c00 	and	w0, w0, #0xffff
 }
-   80fb0:	d65f03c0 	ret
+   80ff0:	d65f03c0 	ret
 		return readb(uart8250_base + offset);
-   80fb4:	38644840 	ldrb	w0, [x2, w4, uxtw]
-   80fb8:	12001c00 	and	w0, w0, #0xff
+   80ff4:	38644840 	ldrb	w0, [x2, w4, uxtw]
+   80ff8:	12001c00 	and	w0, w0, #0xff
 }
-   80fbc:	d65f03c0 	ret
+   80ffc:	d65f03c0 	ret
 
-0000000000080fc0 <uart8250_putc>:
+0000000000081000 <uart8250_putc>:
 	u32 offset = num << uart8250_reg_shift;
-   80fc0:	d0001403 	adrp	x3, 302000 <irq_handlers+0x1370>
-   80fc4:	91326061 	add	x1, x3, #0xc98
-   80fc8:	528000a2 	mov	w2, #0x5                   	// #5
+   81000:	b0001403 	adrp	x3, 302000 <irq_handlers+0x1370>
+   81004:	91326061 	add	x1, x3, #0xc98
+   81008:	528000a2 	mov	w2, #0x5                   	// #5
 	else
 		writel(val, uart8250_base + offset);
 }
 
 void uart8250_putc(char ch)
 {
-   80fcc:	12001c00 	and	w0, w0, #0xff
+   8100c:	12001c00 	and	w0, w0, #0xff
 	u32 offset = num << uart8250_reg_shift;
-   80fd0:	b94c9863 	ldr	w3, [x3, #3224]
+   81010:	b94c9863 	ldr	w3, [x3, #3224]
 		return readl(uart8250_base + offset);
-   80fd4:	f9400425 	ldr	x5, [x1, #8]
+   81014:	f9400425 	ldr	x5, [x1, #8]
 	if (uart8250_reg_width == 1)
-   80fd8:	b9400421 	ldr	w1, [x1, #4]
+   81018:	b9400421 	ldr	w1, [x1, #4]
 		return readl(uart8250_base + offset);
-   80fdc:	1ac32042 	lsl	w2, w2, w3
+   8101c:	1ac32042 	lsl	w2, w2, w3
 		return readb(uart8250_base + offset);
-   80fe0:	8b0200a6 	add	x6, x5, x2
+   81020:	8b0200a6 	add	x6, x5, x2
 		return readl(uart8250_base + offset);
-   80fe4:	8b0208a4 	add	x4, x5, x2, lsl #2
+   81024:	8b0208a4 	add	x4, x5, x2, lsl #2
 		return readw(uart8250_base + offset);
-   80fe8:	8b0204a3 	add	x3, x5, x2, lsl #1
+   81028:	8b0204a3 	add	x3, x5, x2, lsl #1
 	if (uart8250_reg_width == 1)
-   80fec:	7100043f 	cmp	w1, #0x1
-   80ff0:	540000a1 	b.ne	81004 <uart8250_putc+0x44>  // b.any
+   8102c:	7100043f 	cmp	w1, #0x1
+   81030:	540000a1 	b.ne	81044 <uart8250_putc+0x44>  // b.any
 		return readb(uart8250_base + offset);
-   80ff4:	394000c1 	ldrb	w1, [x6]
+   81034:	394000c1 	ldrb	w1, [x6]
 	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
-   80ff8:	362fffe1 	tbz	w1, #5, 80ff4 <uart8250_putc+0x34>
+   81038:	362fffe1 	tbz	w1, #5, 81034 <uart8250_putc+0x34>
 		writeb(val, uart8250_base + offset);
-   80ffc:	390000a0 	strb	w0, [x5]
+   8103c:	390000a0 	strb	w0, [x5]
 		;
 
 	set_reg(UART_THR_OFFSET, ch);
 }
-   81000:	d65f03c0 	ret
+   81040:	d65f03c0 	ret
 	else if (uart8250_reg_width == 2)
-   81004:	7100083f 	cmp	w1, #0x2
-   81008:	54000120 	b.eq	8102c <uart8250_putc+0x6c>  // b.none
+   81044:	7100083f 	cmp	w1, #0x2
+   81048:	54000120 	b.eq	8106c <uart8250_putc+0x6c>  // b.none
 		return readl(uart8250_base + offset);
-   8100c:	b9400082 	ldr	w2, [x4]
+   8104c:	b9400082 	ldr	w2, [x4]
 	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
-   81010:	362fffa2 	tbz	w2, #5, 81004 <uart8250_putc+0x44>
+   81050:	362fffa2 	tbz	w2, #5, 81044 <uart8250_putc+0x44>
 	if (uart8250_reg_width == 1)
-   81014:	7100043f 	cmp	w1, #0x1
-   81018:	54ffff20 	b.eq	80ffc <uart8250_putc+0x3c>  // b.none
+   81054:	7100043f 	cmp	w1, #0x1
+   81058:	54ffff20 	b.eq	8103c <uart8250_putc+0x3c>  // b.none
 	else if (uart8250_reg_width == 2)
-   8101c:	7100083f 	cmp	w1, #0x2
-   81020:	540000a0 	b.eq	81034 <uart8250_putc+0x74>  // b.none
+   8105c:	7100083f 	cmp	w1, #0x2
+   81060:	540000a0 	b.eq	81074 <uart8250_putc+0x74>  // b.none
 		writel(val, uart8250_base + offset);
-   81024:	b90000a0 	str	w0, [x5]
+   81064:	b90000a0 	str	w0, [x5]
 }
-   81028:	d65f03c0 	ret
+   81068:	d65f03c0 	ret
 		return readw(uart8250_base + offset);
-   8102c:	79400061 	ldrh	w1, [x3]
+   8106c:	79400061 	ldrh	w1, [x3]
 	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
-   81030:	362fffe1 	tbz	w1, #5, 8102c <uart8250_putc+0x6c>
+   81070:	362fffe1 	tbz	w1, #5, 8106c <uart8250_putc+0x6c>
 		writew(val, uart8250_base + offset);
-   81034:	790000a0 	strh	w0, [x5]
+   81074:	790000a0 	strh	w0, [x5]
 }
-   81038:	d65f03c0 	ret
-   8103c:	d503201f 	nop
+   81078:	d65f03c0 	ret
+   8107c:	d503201f 	nop
 
-0000000000081040 <uart8250_getc>:
+0000000000081080 <uart8250_getc>:
 	u32 offset = num << uart8250_reg_shift;
-   81040:	b0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
-   81044:	91326022 	add	x2, x1, #0xc98
-   81048:	528000a0 	mov	w0, #0x5                   	// #5
-   8104c:	b94c9821 	ldr	w1, [x1, #3224]
+   81080:	b0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
+   81084:	91326022 	add	x2, x1, #0xc98
+   81088:	528000a0 	mov	w0, #0x5                   	// #5
+   8108c:	b94c9821 	ldr	w1, [x1, #3224]
 	if (uart8250_reg_width == 1)
-   81050:	b9400443 	ldr	w3, [x2, #4]
+   81090:	b9400443 	ldr	w3, [x2, #4]
 		return readb(uart8250_base + offset);
-   81054:	f9400442 	ldr	x2, [x2, #8]
+   81094:	f9400442 	ldr	x2, [x2, #8]
 	u32 offset = num << uart8250_reg_shift;
-   81058:	1ac12004 	lsl	w4, w0, w1
+   81098:	1ac12004 	lsl	w4, w0, w1
 		return readb(uart8250_base + offset);
-   8105c:	1ac12000 	lsl	w0, w0, w1
+   8109c:	1ac12000 	lsl	w0, w0, w1
 	if (uart8250_reg_width == 1)
-   81060:	7100047f 	cmp	w3, #0x1
-   81064:	540001a0 	b.eq	81098 <uart8250_getc+0x58>  // b.none
+   810a0:	7100047f 	cmp	w3, #0x1
+   810a4:	540001a0 	b.eq	810d8 <uart8250_getc+0x58>  // b.none
 	else if (uart8250_reg_width == 2)
-   81068:	7100087f 	cmp	w3, #0x2
-   8106c:	540000a0 	b.eq	81080 <uart8250_getc+0x40>  // b.none
+   810a8:	7100087f 	cmp	w3, #0x2
+   810ac:	540000a0 	b.eq	810c0 <uart8250_getc+0x40>  // b.none
 		return readl(uart8250_base + offset);
-   81070:	b8607840 	ldr	w0, [x2, x0, lsl #2]
+   810b0:	b8607840 	ldr	w0, [x2, x0, lsl #2]
 
 int uart8250_getc(void)
 {
 	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
-   81074:	360001c0 	tbz	w0, #0, 810ac <uart8250_getc+0x6c>
+   810b4:	360001c0 	tbz	w0, #0, 810ec <uart8250_getc+0x6c>
 		return readl(uart8250_base + offset);
-   81078:	b9400040 	ldr	w0, [x2]
+   810b8:	b9400040 	ldr	w0, [x2]
 		return get_reg(UART_RBR_OFFSET);
 	return -1;
 }
-   8107c:	d65f03c0 	ret
+   810bc:	d65f03c0 	ret
 		return readw(uart8250_base + offset);
-   81080:	d37ff800 	lsl	x0, x0, #1
-   81084:	78606840 	ldrh	w0, [x2, x0]
+   810c0:	d37ff800 	lsl	x0, x0, #1
+   810c4:	78606840 	ldrh	w0, [x2, x0]
 	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
-   81088:	36000120 	tbz	w0, #0, 810ac <uart8250_getc+0x6c>
+   810c8:	36000120 	tbz	w0, #0, 810ec <uart8250_getc+0x6c>
 		return readw(uart8250_base + offset);
-   8108c:	79400040 	ldrh	w0, [x2]
-   81090:	12003c00 	and	w0, w0, #0xffff
+   810cc:	79400040 	ldrh	w0, [x2]
+   810d0:	12003c00 	and	w0, w0, #0xffff
 }
-   81094:	d65f03c0 	ret
+   810d4:	d65f03c0 	ret
 		return readb(uart8250_base + offset);
-   81098:	38644840 	ldrb	w0, [x2, w4, uxtw]
+   810d8:	38644840 	ldrb	w0, [x2, w4, uxtw]
 	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
-   8109c:	36000080 	tbz	w0, #0, 810ac <uart8250_getc+0x6c>
+   810dc:	36000080 	tbz	w0, #0, 810ec <uart8250_getc+0x6c>
 		return readb(uart8250_base + offset);
-   810a0:	39400040 	ldrb	w0, [x2]
-   810a4:	12001c00 	and	w0, w0, #0xff
+   810e0:	39400040 	ldrb	w0, [x2]
+   810e4:	12001c00 	and	w0, w0, #0xff
 }
-   810a8:	d65f03c0 	ret
+   810e8:	d65f03c0 	ret
 	return -1;
-   810ac:	12800000 	mov	w0, #0xffffffff            	// #-1
+   810ec:	12800000 	mov	w0, #0xffffffff            	// #-1
 }
-   810b0:	d65f03c0 	ret
+   810f0:	d65f03c0 	ret
 
-00000000000810b4 <uart8250_interrupt_handler>:
+00000000000810f4 <uart8250_interrupt_handler>:
 	if (uart8250_reg_width == 1)
-   810b4:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
-   810b8:	91326000 	add	x0, x0, #0xc98
+   810f4:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
+   810f8:	91326000 	add	x0, x0, #0xc98
 
 void uart8250_interrupt_handler(){
-   810bc:	d10043ff 	sub	sp, sp, #0x10
+   810fc:	d10043ff 	sub	sp, sp, #0x10
 	if (uart8250_reg_width == 1)
-   810c0:	b9400401 	ldr	w1, [x0, #4]
+   81100:	b9400401 	ldr	w1, [x0, #4]
 		return readb(uart8250_base + offset);
-   810c4:	f9400400 	ldr	x0, [x0, #8]
+   81104:	f9400400 	ldr	x0, [x0, #8]
 	if (uart8250_reg_width == 1)
-   810c8:	7100043f 	cmp	w1, #0x1
-   810cc:	540001a0 	b.eq	81100 <uart8250_interrupt_handler+0x4c>  // b.none
+   81108:	7100043f 	cmp	w1, #0x1
+   8110c:	540001a0 	b.eq	81140 <uart8250_interrupt_handler+0x4c>  // b.none
 	else if (uart8250_reg_width == 2)
-   810d0:	7100083f 	cmp	w1, #0x2
-   810d4:	540000c0 	b.eq	810ec <uart8250_interrupt_handler+0x38>  // b.none
+   81110:	7100083f 	cmp	w1, #0x2
+   81114:	540000c0 	b.eq	8112c <uart8250_interrupt_handler+0x38>  // b.none
 		return readl(uart8250_base + offset);
-   810d8:	b9400000 	ldr	w0, [x0]
+   81118:	b9400000 	ldr	w0, [x0]
 	volatile char c = get_reg(UART_RBR_OFFSET);
-   810dc:	12001c00 	and	w0, w0, #0xff
-   810e0:	39003fe0 	strb	w0, [sp, #15]
+   8111c:	12001c00 	and	w0, w0, #0xff
+   81120:	39003fe0 	strb	w0, [sp, #15]
 }
-   810e4:	910043ff 	add	sp, sp, #0x10
-   810e8:	d65f03c0 	ret
+   81124:	910043ff 	add	sp, sp, #0x10
+   81128:	d65f03c0 	ret
 		return readw(uart8250_base + offset);
-   810ec:	79400000 	ldrh	w0, [x0]
+   8112c:	79400000 	ldrh	w0, [x0]
 	volatile char c = get_reg(UART_RBR_OFFSET);
-   810f0:	12001c00 	and	w0, w0, #0xff
-   810f4:	39003fe0 	strb	w0, [sp, #15]
+   81130:	12001c00 	and	w0, w0, #0xff
+   81134:	39003fe0 	strb	w0, [sp, #15]
 }
-   810f8:	910043ff 	add	sp, sp, #0x10
-   810fc:	d65f03c0 	ret
+   81138:	910043ff 	add	sp, sp, #0x10
+   8113c:	d65f03c0 	ret
 		return readb(uart8250_base + offset);
-   81100:	39400000 	ldrb	w0, [x0]
-   81104:	12001c00 	and	w0, w0, #0xff
+   81140:	39400000 	ldrb	w0, [x0]
+   81144:	12001c00 	and	w0, w0, #0xff
 	volatile char c = get_reg(UART_RBR_OFFSET);
-   81108:	39003fe0 	strb	w0, [sp, #15]
+   81148:	39003fe0 	strb	w0, [sp, #15]
 }
-   8110c:	910043ff 	add	sp, sp, #0x10
-   81110:	d65f03c0 	ret
+   8114c:	910043ff 	add	sp, sp, #0x10
+   81150:	d65f03c0 	ret
 
-0000000000081114 <uart8250_enable_rx_int>:
+0000000000081154 <uart8250_enable_rx_int>:
 	u32 offset = num << uart8250_reg_shift;
-   81114:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
-   81118:	91326003 	add	x3, x0, #0xc98
-   8111c:	52800021 	mov	w1, #0x1                   	// #1
-   81120:	b94c9800 	ldr	w0, [x0, #3224]
+   81154:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
+   81158:	91326003 	add	x3, x0, #0xc98
+   8115c:	52800021 	mov	w1, #0x1                   	// #1
+   81160:	b94c9800 	ldr	w0, [x0, #3224]
 	if (uart8250_reg_width == 1)
-   81124:	b9400462 	ldr	w2, [x3, #4]
+   81164:	b9400462 	ldr	w2, [x3, #4]
 		writeb(val, uart8250_base + offset);
-   81128:	f9400463 	ldr	x3, [x3, #8]
+   81168:	f9400463 	ldr	x3, [x3, #8]
 	u32 offset = num << uart8250_reg_shift;
-   8112c:	1ac02024 	lsl	w4, w1, w0
+   8116c:	1ac02024 	lsl	w4, w1, w0
 		writeb(val, uart8250_base + offset);
-   81130:	1ac02020 	lsl	w0, w1, w0
+   81170:	1ac02020 	lsl	w0, w1, w0
 	if (uart8250_reg_width == 1)
-   81134:	6b01005f 	cmp	w2, w1
-   81138:	540000e0 	b.eq	81154 <uart8250_enable_rx_int+0x40>  // b.none
+   81174:	6b01005f 	cmp	w2, w1
+   81178:	540000e0 	b.eq	81194 <uart8250_enable_rx_int+0x40>  // b.none
 	else if (uart8250_reg_width == 2)
-   8113c:	7100085f 	cmp	w2, #0x2
-   81140:	54000060 	b.eq	8114c <uart8250_enable_rx_int+0x38>  // b.none
+   8117c:	7100085f 	cmp	w2, #0x2
+   81180:	54000060 	b.eq	8118c <uart8250_enable_rx_int+0x38>  // b.none
 		writel(val, uart8250_base + offset);
-   81144:	b8207861 	str	w1, [x3, x0, lsl #2]
+   81184:	b8207861 	str	w1, [x3, x0, lsl #2]
 
 void uart8250_enable_rx_int(){
 	set_reg(UART_IER_OFFSET, 1);
 }
-   81148:	d65f03c0 	ret
+   81188:	d65f03c0 	ret
 		writew(val, uart8250_base + offset);
-   8114c:	78244861 	strh	w1, [x3, w4, uxtw]
+   8118c:	78244861 	strh	w1, [x3, w4, uxtw]
 }
-   81150:	d65f03c0 	ret
+   81190:	d65f03c0 	ret
 		writeb(val, uart8250_base + offset);
-   81154:	38244862 	strb	w2, [x3, w4, uxtw]
+   81194:	38244862 	strb	w2, [x3, w4, uxtw]
 }
-   81158:	d65f03c0 	ret
-   8115c:	d503201f 	nop
+   81198:	d65f03c0 	ret
+   8119c:	d503201f 	nop
 
-0000000000081160 <uart8250_init>:
+00000000000811a0 <uart8250_init>:
 
 int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 		  u32 reg_width)
 {
-   81160:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+   811a0:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
 	u16 bdiv;
 
 	uart8250_base	   = (volatile void *)base;
-   81164:	b0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
-   81168:	91326026 	add	x6, x1, #0xc98
+   811a4:	b0001401 	adrp	x1, 302000 <irq_handlers+0x1370>
+   811a8:	91326026 	add	x6, x1, #0xc98
 {
-   8116c:	910003fd 	mov	x29, sp
-   81170:	aa0003e5 	mov	x5, x0
+   811ac:	910003fd 	mov	x29, sp
+   811b0:	aa0003e5 	mov	x5, x0
 	uart8250_reg_shift = reg_shift;
-   81174:	b90c9823 	str	w3, [x1, #3224]
+   811b4:	b90c9823 	str	w3, [x1, #3224]
 	u32 offset = num << uart8250_reg_shift;
-   81178:	52800028 	mov	w8, #0x1                   	// #1
-   8117c:	52800067 	mov	w7, #0x3                   	// #3
-   81180:	528000e0 	mov	w0, #0x7                   	// #7
-   81184:	52800042 	mov	w2, #0x2                   	// #2
-   81188:	52800081 	mov	w1, #0x4                   	// #4
+   811b8:	52800028 	mov	w8, #0x1                   	// #1
+   811bc:	52800067 	mov	w7, #0x3                   	// #3
+   811c0:	528000e0 	mov	w0, #0x7                   	// #7
+   811c4:	52800042 	mov	w2, #0x2                   	// #2
+   811c8:	52800081 	mov	w1, #0x4                   	// #4
 	uart8250_reg_width = reg_width;
-   8118c:	b90004c4 	str	w4, [x6, #4]
+   811cc:	b90004c4 	str	w4, [x6, #4]
 	uart8250_base	   = (volatile void *)base;
-   81190:	f90004c5 	str	x5, [x6, #8]
+   811d0:	f90004c5 	str	x5, [x6, #8]
 	u32 offset = num << uart8250_reg_shift;
-   81194:	1ac3204d 	lsl	w13, w2, w3
-   81198:	1ac3202c 	lsl	w12, w1, w3
-   8119c:	1ac3210e 	lsl	w14, w8, w3
-   811a0:	1ac320e9 	lsl	w9, w7, w3
-   811a4:	1ac3200b 	lsl	w11, w0, w3
+   811d4:	1ac3204d 	lsl	w13, w2, w3
+   811d8:	1ac3202c 	lsl	w12, w1, w3
+   811dc:	1ac3210e 	lsl	w14, w8, w3
+   811e0:	1ac320e9 	lsl	w9, w7, w3
+   811e4:	1ac3200b 	lsl	w11, w0, w3
 		writeb(val, uart8250_base + offset);
-   811a8:	1ac32042 	lsl	w2, w2, w3
-   811ac:	1ac32021 	lsl	w1, w1, w3
-   811b0:	1ac320ea 	lsl	w10, w7, w3
-   811b4:	1ac32006 	lsl	w6, w0, w3
-   811b8:	1ac32103 	lsl	w3, w8, w3
+   811e8:	1ac32042 	lsl	w2, w2, w3
+   811ec:	1ac32021 	lsl	w1, w1, w3
+   811f0:	1ac320ea 	lsl	w10, w7, w3
+   811f4:	1ac32006 	lsl	w6, w0, w3
+   811f8:	1ac32103 	lsl	w3, w8, w3
 	if (uart8250_reg_width == 1)
-   811bc:	6b08009f 	cmp	w4, w8
-   811c0:	540003e0 	b.eq	8123c <uart8250_init+0xdc>  // b.none
+   811fc:	6b08009f 	cmp	w4, w8
+   81200:	540003e0 	b.eq	8127c <uart8250_init+0xdc>  // b.none
 	else if (uart8250_reg_width == 2)
-   811c4:	7100089f 	cmp	w4, #0x2
-   811c8:	540001e0 	b.eq	81204 <uart8250_init+0xa4>  // b.none
+   81204:	7100089f 	cmp	w4, #0x2
+   81208:	540001e0 	b.eq	81244 <uart8250_init+0xa4>  // b.none
 		writel(val, uart8250_base + offset);
-   811cc:	b82378bf 	str	wzr, [x5, x3, lsl #2]
-   811d0:	52801000 	mov	w0, #0x80                  	// #128
-   811d4:	b82a78a0 	str	w0, [x5, x10, lsl #2]
+   8120c:	b82378bf 	str	wzr, [x5, x3, lsl #2]
+   81210:	52801000 	mov	w0, #0x80                  	// #128
+   81214:	b82a78a0 	str	w0, [x5, x10, lsl #2]
 	/* Enable FIFO */
 	set_reg(UART_FCR_OFFSET, 0x01);
 	/* No modem control DTR RTS */
 	set_reg(UART_MCR_OFFSET, 0x00);
 	/* Clear line status */
 	get_reg(UART_LSR_OFFSET);
-   811d8:	528000a0 	mov	w0, #0x5                   	// #5
+   81218:	528000a0 	mov	w0, #0x5                   	// #5
 		writel(val, uart8250_base + offset);
-   811dc:	b82a78a7 	str	w7, [x5, x10, lsl #2]
-   811e0:	b82278a8 	str	w8, [x5, x2, lsl #2]
-   811e4:	b82178bf 	str	wzr, [x5, x1, lsl #2]
+   8121c:	b82a78a7 	str	w7, [x5, x10, lsl #2]
+   81220:	b82278a8 	str	w8, [x5, x2, lsl #2]
+   81224:	b82178bf 	str	wzr, [x5, x1, lsl #2]
 	get_reg(UART_LSR_OFFSET);
-   811e8:	97ffff62 	bl	80f70 <get_reg>
+   81228:	97ffff62 	bl	80fb0 <get_reg>
 	/* Read receive buffer */
 	get_reg(UART_RBR_OFFSET);
-   811ec:	52800000 	mov	w0, #0x0                   	// #0
-   811f0:	97ffff60 	bl	80f70 <get_reg>
+   8122c:	52800000 	mov	w0, #0x0                   	// #0
+   81230:	97ffff60 	bl	80fb0 <get_reg>
 		writel(val, uart8250_base + offset);
-   811f4:	b82678bf 	str	wzr, [x5, x6, lsl #2]
+   81234:	b82678bf 	str	wzr, [x5, x6, lsl #2]
 	/* Set scratchpad */
 	set_reg(UART_SCR_OFFSET, 0x00);
 
 	return 0;
-   811f8:	52800000 	mov	w0, #0x0                   	// #0
-   811fc:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   81200:	d65f03c0 	ret
+   81238:	52800000 	mov	w0, #0x0                   	// #0
+   8123c:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   81240:	d65f03c0 	ret
 		writew(val, uart8250_base + offset);
-   81204:	782e48bf 	strh	wzr, [x5, w14, uxtw]
-   81208:	52801000 	mov	w0, #0x80                  	// #128
-   8120c:	782948a0 	strh	w0, [x5, w9, uxtw]
+   81244:	782e48bf 	strh	wzr, [x5, w14, uxtw]
+   81248:	52801000 	mov	w0, #0x80                  	// #128
+   8124c:	782948a0 	strh	w0, [x5, w9, uxtw]
 	get_reg(UART_LSR_OFFSET);
-   81210:	528000a0 	mov	w0, #0x5                   	// #5
+   81250:	528000a0 	mov	w0, #0x5                   	// #5
 		writew(val, uart8250_base + offset);
-   81214:	782948a7 	strh	w7, [x5, w9, uxtw]
-   81218:	782d48a8 	strh	w8, [x5, w13, uxtw]
-   8121c:	782c48bf 	strh	wzr, [x5, w12, uxtw]
+   81254:	782948a7 	strh	w7, [x5, w9, uxtw]
+   81258:	782d48a8 	strh	w8, [x5, w13, uxtw]
+   8125c:	782c48bf 	strh	wzr, [x5, w12, uxtw]
 	get_reg(UART_LSR_OFFSET);
-   81220:	97ffff54 	bl	80f70 <get_reg>
+   81260:	97ffff54 	bl	80fb0 <get_reg>
 	get_reg(UART_RBR_OFFSET);
-   81224:	52800000 	mov	w0, #0x0                   	// #0
-   81228:	97ffff52 	bl	80f70 <get_reg>
+   81264:	52800000 	mov	w0, #0x0                   	// #0
+   81268:	97ffff52 	bl	80fb0 <get_reg>
 		writew(val, uart8250_base + offset);
-   8122c:	782b48bf 	strh	wzr, [x5, w11, uxtw]
-   81230:	52800000 	mov	w0, #0x0                   	// #0
-   81234:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   81238:	d65f03c0 	ret
+   8126c:	782b48bf 	strh	wzr, [x5, w11, uxtw]
+   81270:	52800000 	mov	w0, #0x0                   	// #0
+   81274:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   81278:	d65f03c0 	ret
 		writeb(val, uart8250_base + offset);
-   8123c:	382e48bf 	strb	wzr, [x5, w14, uxtw]
-   81240:	12800fe0 	mov	w0, #0xffffff80            	// #-128
-   81244:	382948a0 	strb	w0, [x5, w9, uxtw]
+   8127c:	382e48bf 	strb	wzr, [x5, w14, uxtw]
+   81280:	12800fe0 	mov	w0, #0xffffff80            	// #-128
+   81284:	382948a0 	strb	w0, [x5, w9, uxtw]
 	get_reg(UART_LSR_OFFSET);
-   81248:	528000a0 	mov	w0, #0x5                   	// #5
+   81288:	528000a0 	mov	w0, #0x5                   	// #5
 		writeb(val, uart8250_base + offset);
-   8124c:	382948a7 	strb	w7, [x5, w9, uxtw]
-   81250:	382d48a4 	strb	w4, [x5, w13, uxtw]
-   81254:	382c48bf 	strb	wzr, [x5, w12, uxtw]
+   8128c:	382948a7 	strb	w7, [x5, w9, uxtw]
+   81290:	382d48a4 	strb	w4, [x5, w13, uxtw]
+   81294:	382c48bf 	strb	wzr, [x5, w12, uxtw]
 	get_reg(UART_LSR_OFFSET);
-   81258:	97ffff46 	bl	80f70 <get_reg>
+   81298:	97ffff46 	bl	80fb0 <get_reg>
 	get_reg(UART_RBR_OFFSET);
-   8125c:	52800000 	mov	w0, #0x0                   	// #0
-   81260:	97ffff44 	bl	80f70 <get_reg>
+   8129c:	52800000 	mov	w0, #0x0                   	// #0
+   812a0:	97ffff44 	bl	80fb0 <get_reg>
 		writeb(val, uart8250_base + offset);
-   81264:	382b48bf 	strb	wzr, [x5, w11, uxtw]
-   81268:	52800000 	mov	w0, #0x0                   	// #0
-   8126c:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   81270:	d65f03c0 	ret
+   812a4:	382b48bf 	strb	wzr, [x5, w11, uxtw]
+   812a8:	52800000 	mov	w0, #0x0                   	// #0
+   812ac:	a8c17bfd 	ldp	x29, x30, [sp], #16
+   812b0:	d65f03c0 	ret
 	...
 
-0000000000081280 <arch_init>:
+00000000000812c0 <arch_init>:
 #include <sysregs.h>
 
 void _start();
 
 __attribute__((weak))
 void arch_init(){
-   81280:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   81284:	910003fd 	mov	x29, sp
-   81288:	a90153f3 	stp	x19, x20, [sp, #16]
+   812c0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
+   812c4:	910003fd 	mov	x29, sp
+   812c8:	a90153f3 	stp	x19, x20, [sp, #16]
     uint64_t cpuid = MRS(MPIDR_EL1);
-   8128c:	d53800b3 	mrs	x19, mpidr_el1
+   812cc:	d53800b3 	mrs	x19, mpidr_el1
     uint64_t cpuid = get_cpuid();
     gic_init();
-   81290:	94000084 	bl	814a0 <gic_init>
+   812d0:	94000084 	bl	814e0 <gic_init>
     TIMER_FREQ = MRS(CNTFRQ_EL0);
-   81294:	d53be001 	mrs	x1, cntfrq_el0
-   81298:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
-   8129c:	f9065401 	str	x1, [x0, #3240]
-   812a0:	d53800a1 	mrs	x1, mpidr_el1
+   812d4:	d53be001 	mrs	x1, cntfrq_el0
+   812d8:	b0001400 	adrp	x0, 302000 <irq_handlers+0x1370>
+   812dc:	f9065401 	str	x1, [x0, #3240]
+   812e0:	d53800a1 	mrs	x1, mpidr_el1
     return get_cpuid() == master_cpu;
-   812a4:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
+   812e4:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
 #ifndef SINGLE_CORE
     if(cpu_is_master()){
-   812a8:	f940ec00 	ldr	x0, [x0, #472]
-   812ac:	eb21001f 	cmp	x0, w1, uxtb
-   812b0:	540000a0 	b.eq	812c4 <arch_init+0x44>  // b.none
+   812e8:	f940f400 	ldr	x0, [x0, #488]
+   812ec:	eb21001f 	cmp	x0, w1, uxtb
+   812f0:	540000a0 	b.eq	81304 <arch_init+0x44>  // b.none
         do {
             ret = psci_cpu_on(i, (uintptr_t) _start, 0);
         } while(i++, ret == PSCI_E_SUCCESS);
     }
 #endif
     asm volatile("MSR   DAIFClr, #2\n\t");
-   812b4:	d50342ff 	msr	daifclr, #0x2
+   812f4:	d50342ff 	msr	daifclr, #0x2
 }
-   812b8:	a94153f3 	ldp	x19, x20, [sp, #16]
-   812bc:	a8c27bfd 	ldp	x29, x30, [sp], #32
-   812c0:	d65f03c0 	ret
+   812f8:	a94153f3 	ldp	x19, x20, [sp, #16]
+   812fc:	a8c27bfd 	ldp	x29, x30, [sp], #32
+   81300:	d65f03c0 	ret
     return cpuid & MPIDR_CPU_MASK;
-   812c4:	92401e73 	and	x19, x19, #0xff
+   81304:	92401e73 	and	x19, x19, #0xff
             ret = psci_cpu_on(i, (uintptr_t) _start, 0);
-   812c8:	f0fffff4 	adrp	x20, 80000 <_start>
+   81308:	f0fffff4 	adrp	x20, 80000 <_start>
         size_t i = cpuid + 1;
-   812cc:	91000673 	add	x19, x19, #0x1
+   8130c:	91000673 	add	x19, x19, #0x1
             ret = psci_cpu_on(i, (uintptr_t) _start, 0);
-   812d0:	91000294 	add	x20, x20, #0x0
-   812d4:	d503201f 	nop
-   812d8:	aa1303e0 	mov	x0, x19
-   812dc:	aa1403e1 	mov	x1, x20
+   81310:	91000294 	add	x20, x20, #0x0
+   81314:	d503201f 	nop
+   81318:	aa1303e0 	mov	x0, x19
+   8131c:	aa1403e1 	mov	x1, x20
         } while(i++, ret == PSCI_E_SUCCESS);
-   812e0:	91000673 	add	x19, x19, #0x1
+   81320:	91000673 	add	x19, x19, #0x1
             ret = psci_cpu_on(i, (uintptr_t) _start, 0);
-   812e4:	d2800002 	mov	x2, #0x0                   	// #0
-   812e8:	94000022 	bl	81370 <psci_cpu_on>
+   81324:	d2800002 	mov	x2, #0x0                   	// #0
+   81328:	94000022 	bl	813b0 <psci_cpu_on>
         } while(i++, ret == PSCI_E_SUCCESS);
-   812ec:	34ffff60 	cbz	w0, 812d8 <arch_init+0x58>
+   8132c:	34ffff60 	cbz	w0, 81318 <arch_init+0x58>
     asm volatile("MSR   DAIFClr, #2\n\t");
-   812f0:	d50342ff 	msr	daifclr, #0x2
+   81330:	d50342ff 	msr	daifclr, #0x2
 }
-   812f4:	a94153f3 	ldp	x19, x20, [sp, #16]
-   812f8:	a8c27bfd 	ldp	x29, x30, [sp], #32
-   812fc:	d65f03c0 	ret
+   81334:	a94153f3 	ldp	x19, x20, [sp, #16]
+   81338:	a8c27bfd 	ldp	x29, x30, [sp], #32
+   8133c:	d65f03c0 	ret
 
-0000000000081300 <smc_call>:
+0000000000081340 <smc_call>:
 	register uint64_t r0 asm("r0") = x0;
 	register uint64_t r1 asm("r1") = x1;
 	register uint64_t r2 asm("r2") = x2;
 	register uint64_t r3 asm("r3") = x3;
 
     asm volatile(
-   81300:	d4000003 	smc	#0x0
+   81340:	d4000003 	smc	#0x0
 			: "=r" (r0)
 			: "r" (r0), "r" (r1), "r" (r2)
 			: "r3");
 
 	return r0;
 }
-   81304:	d65f03c0 	ret
-   81308:	d503201f 	nop
-   8130c:	d503201f 	nop
+   81344:	d65f03c0 	ret
+   81348:	d503201f 	nop
+   8134c:	d503201f 	nop
 
-0000000000081310 <psci_version>:
+0000000000081350 <psci_version>:
 	register uint64_t r0 asm("r0") = x0;
-   81310:	d2b08000 	mov	x0, #0x84000000            	// #2214592512
+   81350:	d2b08000 	mov	x0, #0x84000000            	// #2214592512
 	register uint64_t r1 asm("r1") = x1;
-   81314:	d2800001 	mov	x1, #0x0                   	// #0
+   81354:	d2800001 	mov	x1, #0x0                   	// #0
 	register uint64_t r2 asm("r2") = x2;
-   81318:	d2800002 	mov	x2, #0x0                   	// #0
+   81358:	d2800002 	mov	x2, #0x0                   	// #0
     asm volatile(
-   8131c:	d4000003 	smc	#0x0
+   8135c:	d4000003 	smc	#0x0
 --------------------------------- */
 
 uint64_t psci_version(void)
 {
     return smc_call(PSCI_VERSION, 0, 0, 0);
 }
-   81320:	93407c00 	sxtw	x0, w0
-   81324:	d65f03c0 	ret
-   81328:	d503201f 	nop
-   8132c:	d503201f 	nop
+   81360:	93407c00 	sxtw	x0, w0
+   81364:	d65f03c0 	ret
+   81368:	d503201f 	nop
+   8136c:	d503201f 	nop
 
-0000000000081330 <psci_cpu_suspend>:
+0000000000081370 <psci_cpu_suspend>:
 
 
 uint64_t psci_cpu_suspend(uint64_t power_state, uintptr_t entrypoint, 
                     uint64_t context_id)
 {
-   81330:	aa0003e3 	mov	x3, x0
-	register uint64_t r0 asm("r0") = x0;
-   81334:	d2800020 	mov	x0, #0x1                   	// #1
-{
-   81338:	aa0103e2 	mov	x2, x1
-	register uint64_t r0 asm("r0") = x0;
-   8133c:	f2b88000 	movk	x0, #0xc400, lsl #16
-	register uint64_t r1 asm("r1") = x1;
-   81340:	aa0303e1 	mov	x1, x3
-    asm volatile(
-   81344:	d4000003 	smc	#0x0
-    return smc_call(PSCI_CPU_SUSPEND_AARCH64, power_state, entrypoint, 
-                                                                    context_id);
-}
-   81348:	93407c00 	sxtw	x0, w0
-   8134c:	d65f03c0 	ret
-
-0000000000081350 <psci_cpu_off>:
-	register uint64_t r0 asm("r0") = x0;
-   81350:	d2800040 	mov	x0, #0x2                   	// #2
-	register uint64_t r1 asm("r1") = x1;
-   81354:	d2800001 	mov	x1, #0x0                   	// #0
-	register uint64_t r0 asm("r0") = x0;
-   81358:	f2b08000 	movk	x0, #0x8400, lsl #16
-	register uint64_t r2 asm("r2") = x2;
-   8135c:	d2800002 	mov	x2, #0x0                   	// #0
-    asm volatile(
-   81360:	d4000003 	smc	#0x0
-
-uint64_t psci_cpu_off(void)
-{
-    return smc_call(PSCI_CPU_OFF, 0, 0, 0);
-}
-   81364:	93407c00 	sxtw	x0, w0
-   81368:	d65f03c0 	ret
-   8136c:	d503201f 	nop
-
-0000000000081370 <psci_cpu_on>:
-
-uint64_t psci_cpu_on(uint64_t target_cpu, uintptr_t entrypoint, 
-                    uint64_t context_id)
-{
    81370:	aa0003e3 	mov	x3, x0
 	register uint64_t r0 asm("r0") = x0;
-   81374:	d2800060 	mov	x0, #0x3                   	// #3
+   81374:	d2800020 	mov	x0, #0x1                   	// #1
 {
    81378:	aa0103e2 	mov	x2, x1
 	register uint64_t r0 asm("r0") = x0;
@@ -1683,441 +1665,483 @@ uint64_t psci_cpu_on(uint64_t target_cpu, uintptr_t entrypoint,
    81380:	aa0303e1 	mov	x1, x3
     asm volatile(
    81384:	d4000003 	smc	#0x0
-    return smc_call(PSCI_CPU_ON_AARCH64, target_cpu, entrypoint, context_id);
+    return smc_call(PSCI_CPU_SUSPEND_AARCH64, power_state, entrypoint, 
+                                                                    context_id);
 }
    81388:	93407c00 	sxtw	x0, w0
    8138c:	d65f03c0 	ret
 
-0000000000081390 <psci_affinity_info>:
+0000000000081390 <psci_cpu_off>:
+	register uint64_t r0 asm("r0") = x0;
+   81390:	d2800040 	mov	x0, #0x2                   	// #2
+	register uint64_t r1 asm("r1") = x1;
+   81394:	d2800001 	mov	x1, #0x0                   	// #0
+	register uint64_t r0 asm("r0") = x0;
+   81398:	f2b08000 	movk	x0, #0x8400, lsl #16
+	register uint64_t r2 asm("r2") = x2;
+   8139c:	d2800002 	mov	x2, #0x0                   	// #0
+    asm volatile(
+   813a0:	d4000003 	smc	#0x0
+
+uint64_t psci_cpu_off(void)
+{
+    return smc_call(PSCI_CPU_OFF, 0, 0, 0);
+}
+   813a4:	93407c00 	sxtw	x0, w0
+   813a8:	d65f03c0 	ret
+   813ac:	d503201f 	nop
+
+00000000000813b0 <psci_cpu_on>:
+
+uint64_t psci_cpu_on(uint64_t target_cpu, uintptr_t entrypoint, 
+                    uint64_t context_id)
+{
+   813b0:	aa0003e3 	mov	x3, x0
+	register uint64_t r0 asm("r0") = x0;
+   813b4:	d2800060 	mov	x0, #0x3                   	// #3
+{
+   813b8:	aa0103e2 	mov	x2, x1
+	register uint64_t r0 asm("r0") = x0;
+   813bc:	f2b88000 	movk	x0, #0xc400, lsl #16
+	register uint64_t r1 asm("r1") = x1;
+   813c0:	aa0303e1 	mov	x1, x3
+    asm volatile(
+   813c4:	d4000003 	smc	#0x0
+    return smc_call(PSCI_CPU_ON_AARCH64, target_cpu, entrypoint, context_id);
+}
+   813c8:	93407c00 	sxtw	x0, w0
+   813cc:	d65f03c0 	ret
+
+00000000000813d0 <psci_affinity_info>:
 
 uint64_t psci_affinity_info(uint64_t target_affinity, 
                             uint64_t lowest_affinity_level)
 {
-   81390:	aa0003e3 	mov	x3, x0
+   813d0:	aa0003e3 	mov	x3, x0
 	register uint64_t r0 asm("r0") = x0;
-   81394:	d2800080 	mov	x0, #0x4                   	// #4
+   813d4:	d2800080 	mov	x0, #0x4                   	// #4
 {
-   81398:	aa0103e2 	mov	x2, x1
+   813d8:	aa0103e2 	mov	x2, x1
 	register uint64_t r0 asm("r0") = x0;
-   8139c:	f2b88000 	movk	x0, #0xc400, lsl #16
+   813dc:	f2b88000 	movk	x0, #0xc400, lsl #16
 	register uint64_t r1 asm("r1") = x1;
-   813a0:	aa0303e1 	mov	x1, x3
+   813e0:	aa0303e1 	mov	x1, x3
     asm volatile(
-   813a4:	d4000003 	smc	#0x0
+   813e4:	d4000003 	smc	#0x0
     return smc_call(PSCI_AFFINITY_INFO_AARCH64, target_affinity, 
                     lowest_affinity_level, 0);
 }
-   813a8:	93407c00 	sxtw	x0, w0
-   813ac:	d65f03c0 	ret
+   813e8:	93407c00 	sxtw	x0, w0
+   813ec:	d65f03c0 	ret
 
-00000000000813b0 <irq_enable>:
+00000000000813f0 <irq_enable>:
 
 #ifndef GIC_VERSION
 #error "GIC_VERSION not defined for this platform"
 #endif
 
 void irq_enable(unsigned id) {
-   813b0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
+   813f0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
    gic_set_enable(id, true); 
-   813b4:	52800021 	mov	w1, #0x1                   	// #1
+   813f4:	52800021 	mov	w1, #0x1                   	// #1
 void irq_enable(unsigned id) {
-   813b8:	910003fd 	mov	x29, sp
-   813bc:	f9000bf3 	str	x19, [sp, #16]
+   813f8:	910003fd 	mov	x29, sp
+   813fc:	f9000bf3 	str	x19, [sp, #16]
    gic_set_enable(id, true); 
-   813c0:	2a0003f3 	mov	w19, w0
-   813c4:	aa1303e0 	mov	x0, x19
-   813c8:	94000046 	bl	814e0 <gic_set_enable>
+   81400:	2a0003f3 	mov	w19, w0
+   81404:	aa1303e0 	mov	x0, x19
+   81408:	94000046 	bl	81520 <gic_set_enable>
    if(GIC_VERSION == GICV2) {
        gic_set_trgt(id, gic_get_trgt(id) | (1 << get_cpuid()));
-   813cc:	aa1303e0 	mov	x0, x19
-   813d0:	94000060 	bl	81550 <gic_get_trgt>
-   813d4:	12001c02 	and	w2, w0, #0xff
+   8140c:	aa1303e0 	mov	x0, x19
+   81410:	94000060 	bl	81590 <gic_get_trgt>
+   81414:	12001c02 	and	w2, w0, #0xff
     uint64_t cpuid = MRS(MPIDR_EL1);
-   813d8:	d53800a3 	mrs	x3, mpidr_el1
-   813dc:	aa1303e0 	mov	x0, x19
-   813e0:	52800021 	mov	w1, #0x1                   	// #1
+   81418:	d53800a3 	mrs	x3, mpidr_el1
+   8141c:	aa1303e0 	mov	x0, x19
+   81420:	52800021 	mov	w1, #0x1                   	// #1
    } else {
        gic_set_route(id, get_cpuid());
    }
 }
-   813e4:	f9400bf3 	ldr	x19, [sp, #16]
+   81424:	f9400bf3 	ldr	x19, [sp, #16]
        gic_set_trgt(id, gic_get_trgt(id) | (1 << get_cpuid()));
-   813e8:	1ac32021 	lsl	w1, w1, w3
+   81428:	1ac32021 	lsl	w1, w1, w3
 }
-   813ec:	a8c27bfd 	ldp	x29, x30, [sp], #32
+   8142c:	a8c27bfd 	ldp	x29, x30, [sp], #32
        gic_set_trgt(id, gic_get_trgt(id) | (1 << get_cpuid()));
-   813f0:	2a010041 	orr	w1, w2, w1
-   813f4:	14000048 	b	81514 <gic_set_trgt>
-   813f8:	d503201f 	nop
-   813fc:	d503201f 	nop
+   81430:	2a010041 	orr	w1, w2, w1
+   81434:	14000048 	b	81554 <gic_set_trgt>
+   81438:	d503201f 	nop
+   8143c:	d503201f 	nop
 
-0000000000081400 <irq_set_prio>:
+0000000000081440 <irq_set_prio>:
 
 void irq_set_prio(unsigned id, unsigned prio){
     gic_set_prio(id, (uint8_t) prio);
-   81400:	2a0003e0 	mov	w0, w0
-   81404:	14000068 	b	815a4 <gic_set_prio>
-   81408:	d503201f 	nop
-   8140c:	d503201f 	nop
+   81440:	2a0003e0 	mov	w0, w0
+   81444:	14000068 	b	815e4 <gic_set_prio>
+   81448:	d503201f 	nop
+   8144c:	d503201f 	nop
 
-0000000000081410 <irq_send_ipi>:
+0000000000081450 <irq_send_ipi>:
 }
 
 void irq_send_ipi(uint64_t target_cpu_mask) {
-   81410:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   81414:	910003fd 	mov	x29, sp
-   81418:	a90153f3 	stp	x19, x20, [sp, #16]
-   8141c:	aa0003f4 	mov	x20, x0
-   81420:	d2800013 	mov	x19, #0x0                   	// #0
-   81424:	14000004 	b	81434 <irq_send_ipi+0x24>
+   81450:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
+   81454:	910003fd 	mov	x29, sp
+   81458:	a90153f3 	stp	x19, x20, [sp, #16]
+   8145c:	aa0003f4 	mov	x20, x0
+   81460:	d2800013 	mov	x19, #0x0                   	// #0
+   81464:	14000004 	b	81474 <irq_send_ipi+0x24>
     for(int i = 0; i < sizeof(target_cpu_mask)*8; i++) {
-   81428:	91000673 	add	x19, x19, #0x1
-   8142c:	f101027f 	cmp	x19, #0x40
-   81430:	54000120 	b.eq	81454 <irq_send_ipi+0x44>  // b.none
+   81468:	91000673 	add	x19, x19, #0x1
+   8146c:	f101027f 	cmp	x19, #0x40
+   81470:	54000120 	b.eq	81494 <irq_send_ipi+0x44>  // b.none
         if(target_cpu_mask & (1ull << i)) {
-   81434:	9ad32681 	lsr	x1, x20, x19
-   81438:	3607ff81 	tbz	w1, #0, 81428 <irq_send_ipi+0x18>
+   81474:	9ad32681 	lsr	x1, x20, x19
+   81478:	3607ff81 	tbz	w1, #0, 81468 <irq_send_ipi+0x18>
             gic_send_sgi(i, IPI_IRQ_ID);
-   8143c:	aa1303e0 	mov	x0, x19
-   81440:	d2800001 	mov	x1, #0x0                   	// #0
+   8147c:	aa1303e0 	mov	x0, x19
+   81480:	d2800001 	mov	x1, #0x0                   	// #0
     for(int i = 0; i < sizeof(target_cpu_mask)*8; i++) {
-   81444:	91000673 	add	x19, x19, #0x1
+   81484:	91000673 	add	x19, x19, #0x1
             gic_send_sgi(i, IPI_IRQ_ID);
-   81448:	9400004e 	bl	81580 <gic_send_sgi>
+   81488:	9400004e 	bl	815c0 <gic_send_sgi>
     for(int i = 0; i < sizeof(target_cpu_mask)*8; i++) {
-   8144c:	f101027f 	cmp	x19, #0x40
-   81450:	54ffff21 	b.ne	81434 <irq_send_ipi+0x24>  // b.any
+   8148c:	f101027f 	cmp	x19, #0x40
+   81490:	54ffff21 	b.ne	81474 <irq_send_ipi+0x24>  // b.any
         }
     }
 }
-   81454:	a94153f3 	ldp	x19, x20, [sp, #16]
-   81458:	a8c27bfd 	ldp	x29, x30, [sp], #32
-   8145c:	d65f03c0 	ret
+   81494:	a94153f3 	ldp	x19, x20, [sp, #16]
+   81498:	a8c27bfd 	ldp	x29, x30, [sp], #32
+   8149c:	d65f03c0 	ret
 
-0000000000081460 <gicc_init>:
+00000000000814a0 <gicc_init>:
 
     for(int i = 0; i< GIC_NUM_PRIO_REGS(GIC_CPU_PRIV); i++){
        //gicd->IPRIORITYR[i] = -1;
     }
 
     gicc->PMR = -1;
-   81460:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
-   81464:	12800002 	mov	w2, #0xffffffff            	// #-1
+   814a0:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
+   814a4:	12800002 	mov	w2, #0xffffffff            	// #-1
     gicc->CTLR = GICC_CTLR_EN_BIT;
-   81468:	52800021 	mov	w1, #0x1                   	// #1
+   814a8:	52800021 	mov	w1, #0x1                   	// #1
     gicc->PMR = -1;
-   8146c:	f940e400 	ldr	x0, [x0, #456]
-   81470:	b9000402 	str	w2, [x0, #4]
+   814ac:	f940ec00 	ldr	x0, [x0, #472]
+   814b0:	b9000402 	str	w2, [x0, #4]
     gicc->CTLR = GICC_CTLR_EN_BIT;
-   81474:	b9000001 	str	w1, [x0]
+   814b4:	b9000001 	str	w1, [x0]
     
 }
-   81478:	d65f03c0 	ret
-   8147c:	d503201f 	nop
+   814b8:	d65f03c0 	ret
+   814bc:	d503201f 	nop
 
-0000000000081480 <gicd_init>:
+00000000000814c0 <gicd_init>:
     return ((gicd->TYPER & BIT_MASK(GICD_TYPER_ITLINENUM_OFF, GICD_TYPER_ITLINENUM_LEN) >>
-   81480:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
+   814c0:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
 //        gicd->ICFGR[i] = 0xAAAAAAAA;
 
     /* No need to setup gicd->NSACR as all interrupts are  setup to group 1 */
 
     /* Enable distributor */
     gicd->CTLR = GICD_CTLR_EN_BIT;
-   81484:	52800021 	mov	w1, #0x1                   	// #1
+   814c4:	52800021 	mov	w1, #0x1                   	// #1
     return ((gicd->TYPER & BIT_MASK(GICD_TYPER_ITLINENUM_OFF, GICD_TYPER_ITLINENUM_LEN) >>
-   81488:	f940e800 	ldr	x0, [x0, #464]
-   8148c:	b9400402 	ldr	w2, [x0, #4]
+   814c8:	f940f000 	ldr	x0, [x0, #480]
+   814cc:	b9400402 	ldr	w2, [x0, #4]
     gicd->CTLR = GICD_CTLR_EN_BIT;
-   81490:	b9000001 	str	w1, [x0]
+   814d0:	b9000001 	str	w1, [x0]
 }
-   81494:	d65f03c0 	ret
-   81498:	d503201f 	nop
-   8149c:	d503201f 	nop
+   814d4:	d65f03c0 	ret
+   814d8:	d503201f 	nop
+   814dc:	d503201f 	nop
 
-00000000000814a0 <gic_init>:
-   814a0:	d53800a1 	mrs	x1, mpidr_el1
+00000000000814e0 <gic_init>:
+   814e0:	d53800a1 	mrs	x1, mpidr_el1
     return cpuid & MPIDR_CPU_MASK;
-   814a4:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
+   814e4:	b00000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
 
 void gic_init() {
     if(get_cpuid() == 0) {
-   814a8:	72001c3f 	tst	w1, #0xff
-   814ac:	540000c1 	b.ne	814c4 <gic_init+0x24>  // b.any
+   814e8:	72001c3f 	tst	w1, #0xff
+   814ec:	540000c1 	b.ne	81504 <gic_init+0x24>  // b.any
     return ((gicd->TYPER & BIT_MASK(GICD_TYPER_ITLINENUM_OFF, GICD_TYPER_ITLINENUM_LEN) >>
-   814b0:	91072001 	add	x1, x0, #0x1c8
+   814f0:	91076001 	add	x1, x0, #0x1d8
     gicd->CTLR = GICD_CTLR_EN_BIT;
-   814b4:	52800022 	mov	w2, #0x1                   	// #1
+   814f4:	52800022 	mov	w2, #0x1                   	// #1
     return ((gicd->TYPER & BIT_MASK(GICD_TYPER_ITLINENUM_OFF, GICD_TYPER_ITLINENUM_LEN) >>
-   814b8:	f9400421 	ldr	x1, [x1, #8]
-   814bc:	b9400423 	ldr	w3, [x1, #4]
+   814f8:	f9400421 	ldr	x1, [x1, #8]
+   814fc:	b9400423 	ldr	w3, [x1, #4]
     gicd->CTLR = GICD_CTLR_EN_BIT;
-   814c0:	b9000022 	str	w2, [x1]
+   81500:	b9000022 	str	w2, [x1]
     gicc->PMR = -1;
-   814c4:	f940e400 	ldr	x0, [x0, #456]
-   814c8:	12800002 	mov	w2, #0xffffffff            	// #-1
+   81504:	f940ec00 	ldr	x0, [x0, #472]
+   81508:	12800002 	mov	w2, #0xffffffff            	// #-1
     gicc->CTLR = GICC_CTLR_EN_BIT;
-   814cc:	52800021 	mov	w1, #0x1                   	// #1
+   8150c:	52800021 	mov	w1, #0x1                   	// #1
     gicc->PMR = -1;
-   814d0:	b9000402 	str	w2, [x0, #4]
+   81510:	b9000402 	str	w2, [x0, #4]
     gicc->CTLR = GICC_CTLR_EN_BIT;
-   814d4:	b9000001 	str	w1, [x0]
+   81514:	b9000001 	str	w1, [x0]
         gicd_init();
     }
     gicc_init();
 }
-   814d8:	d65f03c0 	ret
-   814dc:	d503201f 	nop
+   81518:	d65f03c0 	ret
+   8151c:	d503201f 	nop
 
-00000000000814e0 <gic_set_enable>:
+0000000000081520 <gic_set_enable>:
     
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
     uint64_t bit = (1UL << int_id%(sizeof(uint32_t)*8));
 
     if(en)
         gicd->ISENABLER[reg_ind] = bit;
-   814e0:	b00000a3 	adrp	x3, 96000 <JIS_state_table+0x80>
+   81520:	b00000a3 	adrp	x3, 96000 <JIS_state_table+0x70>
     uint64_t bit = (1UL << int_id%(sizeof(uint32_t)*8));
-   814e4:	12001004 	and	w4, w0, #0x1f
+   81524:	12001004 	and	w4, w0, #0x1f
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
-   814e8:	d345fc00 	lsr	x0, x0, #5
+   81528:	d345fc00 	lsr	x0, x0, #5
     uint64_t bit = (1UL << int_id%(sizeof(uint32_t)*8));
-   814ec:	d2800022 	mov	x2, #0x1                   	// #1
+   8152c:	d2800022 	mov	x2, #0x1                   	// #1
         gicd->ISENABLER[reg_ind] = bit;
-   814f0:	f940e863 	ldr	x3, [x3, #464]
+   81530:	f940f063 	ldr	x3, [x3, #480]
     uint64_t bit = (1UL << int_id%(sizeof(uint32_t)*8));
-   814f4:	9ac42042 	lsl	x2, x2, x4
+   81534:	9ac42042 	lsl	x2, x2, x4
         gicd->ISENABLER[reg_ind] = bit;
-   814f8:	8b000860 	add	x0, x3, x0, lsl #2
+   81538:	8b000860 	add	x0, x3, x0, lsl #2
     if(en)
-   814fc:	72001c3f 	tst	w1, #0xff
-   81500:	54000060 	b.eq	8150c <gic_set_enable+0x2c>  // b.none
+   8153c:	72001c3f 	tst	w1, #0xff
+   81540:	54000060 	b.eq	8154c <gic_set_enable+0x2c>  // b.none
         gicd->ISENABLER[reg_ind] = bit;
-   81504:	b9010002 	str	w2, [x0, #256]
+   81544:	b9010002 	str	w2, [x0, #256]
     else
         gicd->ICENABLER[reg_ind] = bit;
 
 }
-   81508:	d65f03c0 	ret
+   81548:	d65f03c0 	ret
         gicd->ICENABLER[reg_ind] = bit;
-   8150c:	b9018002 	str	w2, [x0, #384]
+   8154c:	b9018002 	str	w2, [x0, #384]
 }
-   81510:	d65f03c0 	ret
+   81550:	d65f03c0 	ret
 
-0000000000081514 <gic_set_trgt>:
+0000000000081554 <gic_set_trgt>:
     uint64_t reg_ind = (int_id * GIC_TARGET_BITS) / (sizeof(uint32_t) * 8);
     uint64_t off = (int_id * GIC_TARGET_BITS) % (sizeof(uint32_t) * 8);
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
 
     gicd->ITARGETSR[reg_ind] =
         (gicd->ITARGETSR[reg_ind] & ~mask) | ((trgt << off) & mask);
-   81514:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   81554:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
-   81518:	927ee804 	and	x4, x0, #0x1ffffffffffffffc
+   81558:	927ee804 	and	x4, x0, #0x1ffffffffffffffc
 {
-   8151c:	12001c21 	and	w1, w1, #0xff
+   8155c:	12001c21 	and	w1, w1, #0xff
     uint64_t off = (int_id * GIC_TARGET_BITS) % (sizeof(uint32_t) * 8);
-   81520:	d37d0400 	ubfiz	x0, x0, #3, #2
+   81560:	d37d0400 	ubfiz	x0, x0, #3, #2
     gicd->ITARGETSR[reg_ind] =
-   81524:	f940e842 	ldr	x2, [x2, #464]
+   81564:	f940f042 	ldr	x2, [x2, #480]
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
-   81528:	52801fe3 	mov	w3, #0xff                  	// #255
-   8152c:	1ac02063 	lsl	w3, w3, w0
-   81530:	8b040042 	add	x2, x2, x4
+   81568:	52801fe3 	mov	w3, #0xff                  	// #255
+   8156c:	1ac02063 	lsl	w3, w3, w0
+   81570:	8b040042 	add	x2, x2, x4
         (gicd->ITARGETSR[reg_ind] & ~mask) | ((trgt << off) & mask);
-   81534:	1ac02021 	lsl	w1, w1, w0
-   81538:	b9480040 	ldr	w0, [x2, #2048]
-   8153c:	4a000021 	eor	w1, w1, w0
-   81540:	0a030021 	and	w1, w1, w3
-   81544:	4a000021 	eor	w1, w1, w0
+   81574:	1ac02021 	lsl	w1, w1, w0
+   81578:	b9480040 	ldr	w0, [x2, #2048]
+   8157c:	4a000021 	eor	w1, w1, w0
+   81580:	0a030021 	and	w1, w1, w3
+   81584:	4a000021 	eor	w1, w1, w0
     gicd->ITARGETSR[reg_ind] =
-   81548:	b9080041 	str	w1, [x2, #2048]
+   81588:	b9080041 	str	w1, [x2, #2048]
 }
-   8154c:	d65f03c0 	ret
+   8158c:	d65f03c0 	ret
 
-0000000000081550 <gic_get_trgt>:
+0000000000081590 <gic_get_trgt>:
 {
     uint64_t reg_ind = (int_id * GIC_TARGET_BITS) / (sizeof(uint32_t) * 8);
     uint64_t off = (int_id * GIC_TARGET_BITS) % (sizeof(uint32_t) * 8);
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
 
     return (gicd->ITARGETSR[reg_ind] & mask) >> off;
-   81550:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
-   81554:	927ee803 	and	x3, x0, #0x1ffffffffffffffc
+   81590:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
+   81594:	927ee803 	and	x3, x0, #0x1ffffffffffffffc
     uint64_t off = (int_id * GIC_TARGET_BITS) % (sizeof(uint32_t) * 8);
-   81558:	d37d0400 	ubfiz	x0, x0, #3, #2
+   81598:	d37d0400 	ubfiz	x0, x0, #3, #2
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
-   8155c:	52801fe1 	mov	w1, #0xff                  	// #255
+   8159c:	52801fe1 	mov	w1, #0xff                  	// #255
     return (gicd->ITARGETSR[reg_ind] & mask) >> off;
-   81560:	f940e842 	ldr	x2, [x2, #464]
+   815a0:	f940f042 	ldr	x2, [x2, #480]
     uint32_t mask = ((1U << GIC_TARGET_BITS) - 1) << off;
-   81564:	1ac02021 	lsl	w1, w1, w0
+   815a4:	1ac02021 	lsl	w1, w1, w0
     return (gicd->ITARGETSR[reg_ind] & mask) >> off;
-   81568:	8b030042 	add	x2, x2, x3
-   8156c:	b9480042 	ldr	w2, [x2, #2048]
-   81570:	0a020021 	and	w1, w1, w2
+   815a8:	8b030042 	add	x2, x2, x3
+   815ac:	b9480042 	ldr	w2, [x2, #2048]
+   815b0:	0a020021 	and	w1, w1, w2
 }
-   81574:	1ac02420 	lsr	w0, w1, w0
-   81578:	d65f03c0 	ret
-   8157c:	d503201f 	nop
+   815b4:	1ac02420 	lsr	w0, w1, w0
+   815b8:	d65f03c0 	ret
+   815bc:	d503201f 	nop
 
-0000000000081580 <gic_send_sgi>:
+00000000000815c0 <gic_send_sgi>:
 
 void gic_send_sgi(uint64_t cpu_target, uint64_t sgi_num){
     gicd->SGIR   = (1UL << (GICD_SGIR_CPUTRGLST_OFF + cpu_target))
-   81580:	b00000a3 	adrp	x3, 96000 <JIS_state_table+0x80>
-   81584:	11004002 	add	w2, w0, #0x10
+   815c0:	b00000a3 	adrp	x3, 96000 <JIS_state_table+0x70>
+   815c4:	11004002 	add	w2, w0, #0x10
         | (sgi_num & GICD_SGIR_SGIINTID_MSK);
-   81588:	12000c21 	and	w1, w1, #0xf
+   815c8:	12000c21 	and	w1, w1, #0xf
     gicd->SGIR   = (1UL << (GICD_SGIR_CPUTRGLST_OFF + cpu_target))
-   8158c:	d2800020 	mov	x0, #0x1                   	// #1
-   81590:	f940e863 	ldr	x3, [x3, #464]
-   81594:	9ac22000 	lsl	x0, x0, x2
+   815cc:	d2800020 	mov	x0, #0x1                   	// #1
+   815d0:	f940f063 	ldr	x3, [x3, #480]
+   815d4:	9ac22000 	lsl	x0, x0, x2
         | (sgi_num & GICD_SGIR_SGIINTID_MSK);
-   81598:	2a000021 	orr	w1, w1, w0
+   815d8:	2a000021 	orr	w1, w1, w0
     gicd->SGIR   = (1UL << (GICD_SGIR_CPUTRGLST_OFF + cpu_target))
-   8159c:	b90f0061 	str	w1, [x3, #3840]
+   815dc:	b90f0061 	str	w1, [x3, #3840]
 }
-   815a0:	d65f03c0 	ret
+   815e0:	d65f03c0 	ret
 
-00000000000815a4 <gic_set_prio>:
+00000000000815e4 <gic_set_prio>:
 void gic_set_prio(uint64_t int_id, uint8_t prio){
     uint64_t reg_ind = (int_id*GIC_PRIO_BITS)/(sizeof(uint32_t)*8);
     uint64_t off = (int_id*GIC_PRIO_BITS)%((sizeof(uint32_t)*8));
     uint64_t mask = ((1 << GIC_PRIO_BITS)-1) << off;
 
     gicd->IPRIORITYR[reg_ind] = (gicd->IPRIORITYR[reg_ind] & ~mask) | 
-   815a4:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   815e4:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
     uint64_t mask = ((1 << GIC_PRIO_BITS)-1) << off;
-   815a8:	927ee804 	and	x4, x0, #0x1ffffffffffffffc
+   815e8:	927ee804 	and	x4, x0, #0x1ffffffffffffffc
 void gic_set_prio(uint64_t int_id, uint8_t prio){
-   815ac:	12001c21 	and	w1, w1, #0xff
+   815ec:	12001c21 	and	w1, w1, #0xff
     uint64_t off = (int_id*GIC_PRIO_BITS)%((sizeof(uint32_t)*8));
-   815b0:	d37d0400 	ubfiz	x0, x0, #3, #2
+   815f0:	d37d0400 	ubfiz	x0, x0, #3, #2
     gicd->IPRIORITYR[reg_ind] = (gicd->IPRIORITYR[reg_ind] & ~mask) | 
-   815b4:	f940e842 	ldr	x2, [x2, #464]
+   815f4:	f940f042 	ldr	x2, [x2, #480]
     uint64_t mask = ((1 << GIC_PRIO_BITS)-1) << off;
-   815b8:	52801fe3 	mov	w3, #0xff                  	// #255
-   815bc:	1ac02063 	lsl	w3, w3, w0
-   815c0:	8b040042 	add	x2, x2, x4
+   815f8:	52801fe3 	mov	w3, #0xff                  	// #255
+   815fc:	1ac02063 	lsl	w3, w3, w0
+   81600:	8b040042 	add	x2, x2, x4
         ((prio << off) & mask);
-   815c4:	1ac02021 	lsl	w1, w1, w0
+   81604:	1ac02021 	lsl	w1, w1, w0
     gicd->IPRIORITYR[reg_ind] = (gicd->IPRIORITYR[reg_ind] & ~mask) | 
-   815c8:	b9440040 	ldr	w0, [x2, #1024]
-   815cc:	4a000021 	eor	w1, w1, w0
-   815d0:	0a030021 	and	w1, w1, w3
-   815d4:	4a000021 	eor	w1, w1, w0
-   815d8:	b9040041 	str	w1, [x2, #1024]
+   81608:	b9440040 	ldr	w0, [x2, #1024]
+   8160c:	4a000021 	eor	w1, w1, w0
+   81610:	0a030021 	and	w1, w1, w3
+   81614:	4a000021 	eor	w1, w1, w0
+   81618:	b9040041 	str	w1, [x2, #1024]
 }
-   815dc:	d65f03c0 	ret
+   8161c:	d65f03c0 	ret
 
-00000000000815e0 <gic_is_pending>:
+0000000000081620 <gic_is_pending>:
 bool gic_is_pending(uint64_t int_id){
 
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
     uint64_t off = int_id%(sizeof(uint32_t)*8);
 
     return ((1U << off) & gicd->ISPENDR[reg_ind]) != 0;
-   815e0:	b00000a1 	adrp	x1, 96000 <JIS_state_table+0x80>
-   815e4:	f940e822 	ldr	x2, [x1, #464]
+   81620:	b00000a1 	adrp	x1, 96000 <JIS_state_table+0x70>
+   81624:	f940f022 	ldr	x2, [x1, #480]
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
-   815e8:	d345fc01 	lsr	x1, x0, #5
+   81628:	d345fc01 	lsr	x1, x0, #5
     uint64_t off = int_id%(sizeof(uint32_t)*8);
-   815ec:	92401000 	and	x0, x0, #0x1f
+   8162c:	92401000 	and	x0, x0, #0x1f
     return ((1U << off) & gicd->ISPENDR[reg_ind]) != 0;
-   815f0:	8b010841 	add	x1, x2, x1, lsl #2
-   815f4:	b9420021 	ldr	w1, [x1, #512]
-   815f8:	1ac02420 	lsr	w0, w1, w0
+   81630:	8b010841 	add	x1, x2, x1, lsl #2
+   81634:	b9420021 	ldr	w1, [x1, #512]
+   81638:	1ac02420 	lsr	w0, w1, w0
 }
-   815fc:	12000000 	and	w0, w0, #0x1
-   81600:	d65f03c0 	ret
+   8163c:	12000000 	and	w0, w0, #0x1
+   81640:	d65f03c0 	ret
 
-0000000000081604 <gic_set_pending>:
+0000000000081644 <gic_set_pending>:
 void gic_set_pending(uint64_t int_id, bool pending){
     uint64_t reg_ind = int_id / (sizeof(uint32_t) * 8);
     uint64_t mask = 1U << int_id % (sizeof(uint32_t) * 8);
 
     if (pending) {
         gicd->ISPENDR[reg_ind] = mask;
-   81604:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   81644:	b00000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
     uint64_t mask = 1U << int_id % (sizeof(uint32_t) * 8);
-   81608:	52800023 	mov	w3, #0x1                   	// #1
+   81648:	52800023 	mov	w3, #0x1                   	// #1
         gicd->ISPENDR[reg_ind] = mask;
-   8160c:	f940e844 	ldr	x4, [x2, #464]
+   8164c:	f940f044 	ldr	x4, [x2, #480]
     uint64_t reg_ind = int_id / (sizeof(uint32_t) * 8);
-   81610:	d345fc02 	lsr	x2, x0, #5
+   81650:	d345fc02 	lsr	x2, x0, #5
     uint64_t mask = 1U << int_id % (sizeof(uint32_t) * 8);
-   81614:	1ac02060 	lsl	w0, w3, w0
+   81654:	1ac02060 	lsl	w0, w3, w0
         gicd->ISPENDR[reg_ind] = mask;
-   81618:	8b020882 	add	x2, x4, x2, lsl #2
+   81658:	8b020882 	add	x2, x4, x2, lsl #2
     if (pending) {
-   8161c:	72001c3f 	tst	w1, #0xff
-   81620:	54000060 	b.eq	8162c <gic_set_pending+0x28>  // b.none
+   8165c:	72001c3f 	tst	w1, #0xff
+   81660:	54000060 	b.eq	8166c <gic_set_pending+0x28>  // b.none
         gicd->ISPENDR[reg_ind] = mask;
-   81624:	b9020040 	str	w0, [x2, #512]
+   81664:	b9020040 	str	w0, [x2, #512]
     } else {
         gicd->ICPENDR[reg_ind] = mask;
     }   
 }
-   81628:	d65f03c0 	ret
+   81668:	d65f03c0 	ret
         gicd->ICPENDR[reg_ind] = mask;
-   8162c:	b9028040 	str	w0, [x2, #640]
+   8166c:	b9028040 	str	w0, [x2, #640]
 }
-   81630:	d65f03c0 	ret
+   81670:	d65f03c0 	ret
 
-0000000000081634 <gic_is_active>:
+0000000000081674 <gic_is_active>:
 bool gic_is_active(uint64_t int_id){
 
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
     uint64_t off = int_id%(sizeof(uint32_t)*8);
 
     return ((1U << off) & gicd->ISACTIVER[reg_ind]) != 0;
-   81634:	b00000a1 	adrp	x1, 96000 <JIS_state_table+0x80>
-   81638:	f940e822 	ldr	x2, [x1, #464]
+   81674:	b00000a1 	adrp	x1, 96000 <JIS_state_table+0x70>
+   81678:	f940f022 	ldr	x2, [x1, #480]
     uint64_t reg_ind = int_id/(sizeof(uint32_t)*8);
-   8163c:	d345fc01 	lsr	x1, x0, #5
+   8167c:	d345fc01 	lsr	x1, x0, #5
     uint64_t off = int_id%(sizeof(uint32_t)*8);
-   81640:	92401000 	and	x0, x0, #0x1f
+   81680:	92401000 	and	x0, x0, #0x1f
     return ((1U << off) & gicd->ISACTIVER[reg_ind]) != 0;
-   81644:	8b010841 	add	x1, x2, x1, lsl #2
-   81648:	b9430021 	ldr	w1, [x1, #768]
-   8164c:	1ac02420 	lsr	w0, w1, w0
+   81684:	8b010841 	add	x1, x2, x1, lsl #2
+   81688:	b9430021 	ldr	w1, [x1, #768]
+   8168c:	1ac02420 	lsr	w0, w1, w0
 }
-   81650:	12000000 	and	w0, w0, #0x1
-   81654:	d65f03c0 	ret
-   81658:	d503201f 	nop
-   8165c:	d503201f 	nop
+   81690:	12000000 	and	w0, w0, #0x1
+   81694:	d65f03c0 	ret
+   81698:	d503201f 	nop
+   8169c:	d503201f 	nop
 
-0000000000081660 <gic_handle>:
+00000000000816a0 <gic_handle>:
 
 void gic_handle(){
-   81660:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   81664:	910003fd 	mov	x29, sp
-   81668:	a90153f3 	stp	x19, x20, [sp, #16]
+   816a0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
+   816a4:	910003fd 	mov	x29, sp
+   816a8:	a90153f3 	stp	x19, x20, [sp, #16]
 
     uint64_t ack = gicc->IAR;
-   8166c:	b00000b4 	adrp	x20, 96000 <JIS_state_table+0x80>
-   81670:	f940e680 	ldr	x0, [x20, #456]
-   81674:	b9400c13 	ldr	w19, [x0, #12]
+   816ac:	b00000b4 	adrp	x20, 96000 <JIS_state_table+0x70>
+   816b0:	f940ee80 	ldr	x0, [x20, #472]
+   816b4:	b9400c13 	ldr	w19, [x0, #12]
     uint64_t id = ack & GICC_IAR_ID_MSK;
-   81678:	12002660 	and	w0, w19, #0x3ff
+   816b8:	12002660 	and	w0, w19, #0x3ff
     uint64_t src = (ack & GICC_IAR_CPU_MSK) >> GICC_IAR_CPU_OFF;
 
     if(id >= 1022) return;
-   8167c:	710ff41f 	cmp	w0, #0x3fd
-   81680:	54000088 	b.hi	81690 <gic_handle+0x30>  // b.pmore
+   816bc:	710ff41f 	cmp	w0, #0x3fd
+   816c0:	54000088 	b.hi	816d0 <gic_handle+0x30>  // b.pmore
 
     irq_handle(id);
-   81684:	97fffd9b 	bl	80cf0 <irq_handle>
+   816c4:	97fffd9b 	bl	80d30 <irq_handle>
         
     gicc->EOIR = ack;
-   81688:	f940e680 	ldr	x0, [x20, #456]
-   8168c:	b9001013 	str	w19, [x0, #16]
+   816c8:	f940ee80 	ldr	x0, [x20, #472]
+   816cc:	b9001013 	str	w19, [x0, #16]
     
 }
-   81690:	a94153f3 	ldp	x19, x20, [sp, #16]
-   81694:	a8c27bfd 	ldp	x29, x30, [sp], #32
-   81698:	d65f03c0 	ret
+   816d0:	a94153f3 	ldp	x19, x20, [sp, #16]
+   816d4:	a8c27bfd 	ldp	x29, x30, [sp], #32
+   816d8:	d65f03c0 	ret
 	...
 
 0000000000081800 <_exception_vector>:
@@ -2328,7 +2352,7 @@ curr_el_spx_irq:
    81aa8:	a9094ff2 	stp	x18, x19, [sp, #144]
    81aac:	a90e7bfd 	stp	x29, x30, [sp, #224]
     bl	gic_handle
-   81ab0:	97fffeec 	bl	81660 <gic_handle>
+   81ab0:	97fffefc 	bl	816a0 <gic_handle>
     RESTORE_REGS
    81ab4:	a94007e0 	ldp	x0, x1, [sp]
    81ab8:	a9410fe2 	ldp	x2, x3, [sp, #16]
@@ -2368,7 +2392,7 @@ curr_el_spx_fiq:
    81b28:	a9094ff2 	stp	x18, x19, [sp, #144]
    81b2c:	a90e7bfd 	stp	x29, x30, [sp, #224]
     bl	gic_handle
-   81b30:	97fffecc 	bl	81660 <gic_handle>
+   81b30:	97fffedc 	bl	816a0 <gic_handle>
     RESTORE_REGS
    81b34:	a94007e0 	ldp	x0, x1, [sp]
    81b38:	a9410fe2 	ldp	x2, x3, [sp, #16]
@@ -2731,8 +2755,8 @@ lower_el_aarch32_serror:
    81ffc:	d503201f 	nop
 
 0000000000082000 <__errno>:
-   82000:	900000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
-   82004:	f940f800 	ldr	x0, [x0, #496]
+   82000:	900000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
+   82004:	f9410000 	ldr	x0, [x0, #512]
    82008:	d65f03c0 	ret
    8200c:	00000000 	udf	#0
 
@@ -2773,12 +2797,12 @@ lower_el_aarch32_serror:
    8208c:	910003fd 	mov	x29, sp
    82090:	910343ec 	add	x12, sp, #0xd0
    82094:	910443e8 	add	x8, sp, #0x110
-   82098:	900000a9 	adrp	x9, 96000 <JIS_state_table+0x80>
+   82098:	900000a9 	adrp	x9, 96000 <JIS_state_table+0x70>
    8209c:	a90323e8 	stp	x8, x8, [sp, #48]
    820a0:	aa0003e8 	mov	x8, x0
    820a4:	f90023ec 	str	x12, [sp, #64]
    820a8:	29092beb 	stp	w11, w10, [sp, #72]
-   820ac:	f940f920 	ldr	x0, [x9, #496]
+   820ac:	f9410120 	ldr	x0, [x9, #512]
    820b0:	3d8017e0 	str	q0, [sp, #80]
    820b4:	ad41c3e0 	ldp	q0, q16, [sp, #48]
    820b8:	3d801be1 	str	q1, [sp, #96]
@@ -2806,9 +2830,9 @@ lower_el_aarch32_serror:
 	...
 
 0000000000082110 <putchar>:
-   82110:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   82110:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
    82114:	2a0003e1 	mov	w1, w0
-   82118:	f940f840 	ldr	x0, [x2, #496]
+   82118:	f9410040 	ldr	x0, [x2, #512]
    8211c:	f9400802 	ldr	x2, [x0, #16]
    82120:	14002cb4 	b	8d3f0 <_putc_r>
 	...
@@ -2824,9 +2848,9 @@ lower_el_aarch32_serror:
    8214c:	f9402682 	ldr	x2, [x20, #72]
    82150:	91000404 	add	x4, x0, #0x1
    82154:	910103e6 	add	x6, sp, #0x40
-   82158:	f0000081 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   82158:	f0000081 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8215c:	d2800023 	mov	x3, #0x1                   	// #1
-   82160:	9116c021 	add	x1, x1, #0x5b0
+   82160:	91170021 	add	x1, x1, #0x5c0
    82164:	52800045 	mov	w5, #0x2                   	// #2
    82168:	f90017e6 	str	x6, [sp, #40]
    8216c:	b90033e5 	str	w5, [sp, #48]
@@ -2876,18 +2900,18 @@ lower_el_aarch32_serror:
    8221c:	00000000 	udf	#0
 
 0000000000082220 <puts>:
-   82220:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   82220:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
    82224:	aa0003e1 	mov	x1, x0
-   82228:	f940f840 	ldr	x0, [x2, #496]
+   82228:	f9410040 	ldr	x0, [x2, #512]
    8222c:	17ffffc1 	b	82130 <_puts_r>
 
 0000000000082230 <stdio_exit_handler>:
-   82230:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   82230:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
    82234:	d0000041 	adrp	x1, 8c000 <currentlocale+0x80>
-   82238:	910d4042 	add	x2, x2, #0x350
+   82238:	910d8042 	add	x2, x2, #0x360
    8223c:	9131c021 	add	x1, x1, #0xc70
-   82240:	900000a0 	adrp	x0, 96000 <JIS_state_table+0x80>
-   82244:	9107e000 	add	x0, x0, #0x1f8
+   82240:	900000a0 	adrp	x0, 96000 <JIS_state_table+0x70>
+   82244:	91082000 	add	x0, x0, #0x208
    82248:	140003b6 	b	83120 <_fwalk_sglue>
    8224c:	00000000 	udf	#0
 
@@ -3058,8 +3082,8 @@ lower_el_aarch32_serror:
    824d8:	90001400 	adrp	x0, 302000 <irq_handlers+0x1370>
    824dc:	f9476c00 	ldr	x0, [x0, #3800]
    824e0:	b40007a0 	cbz	x0, 825d4 <__sfp+0x124>
-   824e4:	900000b4 	adrp	x20, 96000 <JIS_state_table+0x80>
-   824e8:	910d4294 	add	x20, x20, #0x350
+   824e4:	900000b4 	adrp	x20, 96000 <JIS_state_table+0x70>
+   824e8:	910d8294 	add	x20, x20, #0x360
    824ec:	52801717 	mov	w23, #0xb8                  	// #184
    824f0:	b9400a82 	ldr	w2, [x20, #8]
    824f4:	f9400a93 	ldr	x19, [x20, #16]
@@ -3175,19 +3199,19 @@ lower_el_aarch32_serror:
    8269c:	910003fd 	mov	x29, sp
    826a0:	94002624 	bl	8bf30 <__retarget_lock_acquire_recursive>
    826a4:	a8c17bfd 	ldp	x29, x30, [sp], #16
-   826a8:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   826a8:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
    826ac:	90000001 	adrp	x1, 82000 <__errno>
-   826b0:	910d4042 	add	x2, x2, #0x350
+   826b0:	910d8042 	add	x2, x2, #0x360
    826b4:	910b4021 	add	x1, x1, #0x2d0
    826b8:	d2800000 	mov	x0, #0x0                   	// #0
    826bc:	14000299 	b	83120 <_fwalk_sglue>
 
 00000000000826c0 <__fp_unlock_all>:
    826c0:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   826c4:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x80>
+   826c4:	900000a2 	adrp	x2, 96000 <JIS_state_table+0x70>
    826c8:	90000001 	adrp	x1, 82000 <__errno>
    826cc:	910003fd 	mov	x29, sp
-   826d0:	910d4042 	add	x2, x2, #0x350
+   826d0:	910d8042 	add	x2, x2, #0x360
    826d4:	910c4021 	add	x1, x1, #0x310
    826d8:	d2800000 	mov	x0, #0x0                   	// #0
    826dc:	94000291 	bl	83120 <_fwalk_sglue>
@@ -3274,7 +3298,7 @@ lower_el_aarch32_serror:
 
 0000000000082820 <snprintf>:
    82820:	a9a37bfd 	stp	x29, x30, [sp, #-464]!
-   82824:	900000a9 	adrp	x9, 96000 <JIS_state_table+0x80>
+   82824:	900000a9 	adrp	x9, 96000 <JIS_state_table+0x70>
    82828:	b2407be8 	mov	x8, #0x7fffffff            	// #2147483647
    8282c:	910003fd 	mov	x29, sp
    82830:	f9000bf3 	str	x19, [sp, #16]
@@ -3289,7 +3313,7 @@ lower_el_aarch32_serror:
    82854:	a91a93e3 	stp	x3, x4, [sp, #424]
    82858:	a91b9be5 	stp	x5, x6, [sp, #440]
    8285c:	f900e7e7 	str	x7, [sp, #456]
-   82860:	f940f933 	ldr	x19, [x9, #496]
+   82860:	f9410133 	ldr	x19, [x9, #512]
    82864:	eb08003f 	cmp	x1, x8
    82868:	54000768 	b.hi	82954 <snprintf+0x134>  // b.pmore
    8286c:	52804103 	mov	w3, #0x208                 	// #520
@@ -3842,7 +3866,7 @@ lower_el_aarch32_serror:
    830d8:	aa0203e1 	mov	x1, x2
    830dc:	b9012a9f 	str	wzr, [x20, #296]
    830e0:	aa0303e2 	mov	x2, x3
-   830e4:	97fff723 	bl	80d70 <_write>
+   830e4:	97fff733 	bl	80db0 <_write>
    830e8:	93407c01 	sxtw	x1, w0
    830ec:	3100041f 	cmn	w0, #0x1
    830f0:	540000a0 	b.eq	83104 <_write_r+0x44>  // b.none
@@ -3938,12 +3962,12 @@ lower_el_aarch32_serror:
    83248:	6d0627e8 	stp	d8, d9, [sp, #96]
    8324c:	910783f6 	add	x22, sp, #0x1e0
    83250:	2f00e408 	movi	d8, #0x0
-   83254:	f0000094 	adrp	x20, 96000 <JIS_state_table+0x80>
+   83254:	f0000094 	adrp	x20, 96000 <JIS_state_table+0x70>
    83258:	aa1603fc 	mov	x28, x22
-   8325c:	91320294 	add	x20, x20, #0xc80
+   8325c:	91324294 	add	x20, x20, #0xc90
    83260:	aa0903f9 	mov	x25, x9
-   83264:	d0000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   83268:	91185000 	add	x0, x0, #0x614
+   83264:	d0000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   83268:	91189000 	add	x0, x0, #0x624
    8326c:	b9007bff 	str	wzr, [sp, #120]
    83270:	f90047e0 	str	x0, [sp, #136]
    83274:	f90063ff 	str	xzr, [sp, #192]
@@ -4107,9 +4131,9 @@ lower_el_aarch32_serror:
    834ec:	7100241f 	cmp	w0, #0x9
    834f0:	54ffff69 	b.ls	834dc <_svfprintf_r+0x31c>  // b.plast
    834f4:	17ffff9e 	b	8336c <_svfprintf_r+0x1ac>
-   834f8:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   834f8:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    834fc:	b9416be1 	ldr	w1, [sp, #360]
-   83500:	911b4084 	add	x4, x4, #0x6d0
+   83500:	911b8084 	add	x4, x4, #0x6e0
    83504:	7100435f 	cmp	w26, #0x10
    83508:	5400058d 	b.le	835b8 <_svfprintf_r+0x3f8>
    8350c:	aa1c03e2 	mov	x2, x28
@@ -4187,9 +4211,9 @@ lower_el_aarch32_serror:
    8362c:	54003da1 	b.ne	83de0 <_svfprintf_r+0xc20>  // b.any
    83630:	b9416be1 	ldr	w1, [sp, #360]
    83634:	91000400 	add	x0, x0, #0x1
-   83638:	d0000082 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   83638:	d0000082 	adrp	x2, 95000 <pmu_event_descr+0x60>
    8363c:	d2800024 	mov	x4, #0x1                   	// #1
-   83640:	91184042 	add	x2, x2, #0x610
+   83640:	91188042 	add	x2, x2, #0x620
    83644:	11000421 	add	w1, w1, #0x1
    83648:	a9001382 	stp	x2, x4, [x28]
    8364c:	9100439c 	add	x28, x28, #0x10
@@ -4215,9 +4239,9 @@ lower_el_aarch32_serror:
    8369c:	5100043a 	sub	w26, w1, #0x1
    836a0:	7100035f 	cmp	w26, #0x0
    836a4:	54ffef6d 	b.le	83490 <_svfprintf_r+0x2d0>
-   836a8:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   836a8:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    836ac:	b9416be1 	ldr	w1, [sp, #360]
-   836b0:	911b4084 	add	x4, x4, #0x6d0
+   836b0:	911b8084 	add	x4, x4, #0x6e0
    836b4:	7100435f 	cmp	w26, #0x10
    836b8:	5400c72d 	b.le	84f9c <_svfprintf_r+0x1ddc>
    836bc:	aa1c03e2 	mov	x2, x28
@@ -4249,9 +4273,9 @@ lower_el_aarch32_serror:
    83724:	aa1603e2 	mov	x2, x22
    83728:	b9416be1 	ldr	w1, [sp, #360]
    8372c:	17ffffed 	b	836e0 <_svfprintf_r+0x520>
-   83730:	d000008d 	adrp	x13, 95000 <pmu_event_descr+0x70>
+   83730:	d000008d 	adrp	x13, 95000 <pmu_event_descr+0x60>
    83734:	b9416be1 	ldr	w1, [sp, #360]
-   83738:	911b81ad 	add	x13, x13, #0x6e0
+   83738:	911bc1ad 	add	x13, x13, #0x6f0
    8373c:	7100409f 	cmp	w4, #0x10
    83740:	5400060d 	b.le	83800 <_svfprintf_r+0x640>
    83744:	aa1c03e2 	mov	x2, x28
@@ -4334,9 +4358,9 @@ lower_el_aarch32_serror:
    83878:	17fffee9 	b	8341c <_svfprintf_r+0x25c>
    8387c:	b9416be1 	ldr	w1, [sp, #360]
    83880:	91000400 	add	x0, x0, #0x1
-   83884:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   83884:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    83888:	d2800027 	mov	x7, #0x1                   	// #1
-   8388c:	91184084 	add	x4, x4, #0x610
+   8388c:	91188084 	add	x4, x4, #0x620
    83890:	11000421 	add	w1, w1, #0x1
    83894:	a9001f84 	stp	x4, x7, [x28]
    83898:	9100439c 	add	x28, x28, #0x10
@@ -4390,9 +4414,9 @@ lower_el_aarch32_serror:
    83958:	4b03017a 	sub	w26, w11, w3
    8395c:	7100035f 	cmp	w26, #0x0
    83960:	54ffd7cd 	b.le	83458 <_svfprintf_r+0x298>
-   83964:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   83964:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    83968:	b9416be1 	ldr	w1, [sp, #360]
-   8396c:	911b4084 	add	x4, x4, #0x6d0
+   8396c:	911b8084 	add	x4, x4, #0x6e0
    83970:	7100435f 	cmp	w26, #0x10
    83974:	540005cd 	b.le	83a2c <_svfprintf_r+0x86c>
    83978:	aa1c03e2 	mov	x2, x28
@@ -4574,9 +4598,9 @@ lower_el_aarch32_serror:
    83c38:	b940fbe7 	ldr	w7, [sp, #248]
    83c3c:	b9410be3 	ldr	w3, [sp, #264]
    83c40:	17fffe04 	b	83450 <_svfprintf_r+0x290>
-   83c44:	d000008d 	adrp	x13, 95000 <pmu_event_descr+0x70>
+   83c44:	d000008d 	adrp	x13, 95000 <pmu_event_descr+0x60>
    83c48:	b9416be1 	ldr	w1, [sp, #360]
-   83c4c:	911b81ad 	add	x13, x13, #0x6e0
+   83c4c:	911bc1ad 	add	x13, x13, #0x6f0
    83c50:	7100435f 	cmp	w26, #0x10
    83c54:	5400046d 	b.le	83ce0 <_svfprintf_r+0xb20>
    83c58:	2a1a03f8 	mov	w24, w26
@@ -4660,11 +4684,11 @@ lower_el_aarch32_serror:
    83d90:	1e602118 	fcmpe	d8, #0.0
    83d94:	5400b964 	b.mi	854c0 <_svfprintf_r+0x2300>  // b.first
    83d98:	3944bfe1 	ldrb	w1, [sp, #303]
-   83d9c:	d0000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   83da0:	d0000085 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   83d9c:	d0000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   83da0:	d0000085 	adrp	x5, 95000 <pmu_event_descr+0x60>
    83da4:	7101211f 	cmp	w8, #0x48
-   83da8:	91170000 	add	x0, x0, #0x5c0
-   83dac:	9116e0a5 	add	x5, x5, #0x5b8
+   83da8:	91174000 	add	x0, x0, #0x5d0
+   83dac:	911720a5 	add	x5, x5, #0x5c8
    83db0:	b90093ff 	str	wzr, [sp, #144]
    83db4:	52800063 	mov	w3, #0x3                   	// #3
    83db8:	2913ffff 	stp	wzr, wzr, [sp, #156]
@@ -4745,9 +4769,9 @@ lower_el_aarch32_serror:
    83ee4:	4b1b035a 	sub	w26, w26, w27
    83ee8:	7100035f 	cmp	w26, #0x0
    83eec:	54ffad2d 	b.le	83490 <_svfprintf_r+0x2d0>
-   83ef0:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   83ef0:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    83ef4:	b9416be1 	ldr	w1, [sp, #360]
-   83ef8:	911b4084 	add	x4, x4, #0x6d0
+   83ef8:	911b8084 	add	x4, x4, #0x6e0
    83efc:	7100435f 	cmp	w26, #0x10
    83f00:	540084ed 	b.le	84f9c <_svfprintf_r+0x1ddc>
    83f04:	2a1a03e5 	mov	w5, w26
@@ -4804,8 +4828,8 @@ lower_el_aarch32_serror:
    83fd0:	b940cbe2 	ldr	w2, [sp, #200]
    83fd4:	7100045f 	cmp	w2, #0x1
    83fd8:	54ffdd8d 	b.le	83b88 <_svfprintf_r+0x9c8>
-   83fdc:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
-   83fe0:	911b4084 	add	x4, x4, #0x6d0
+   83fdc:	d0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
+   83fe0:	911b8084 	add	x4, x4, #0x6e0
    83fe4:	7100445f 	cmp	w2, #0x11
    83fe8:	54003c4d 	b.le	84770 <_svfprintf_r+0x15b0>
    83fec:	2a1a03f8 	mov	w24, w26
@@ -5045,9 +5069,9 @@ lower_el_aarch32_serror:
    84394:	f90043e1 	str	x1, [sp, #128]
    84398:	f9400000 	ldr	x0, [x0]
    8439c:	528f0602 	mov	w2, #0x7830                	// #30768
-   843a0:	b0000083 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   843a0:	b0000083 	adrp	x3, 95000 <pmu_event_descr+0x60>
    843a4:	321f013a 	orr	w26, w9, #0x2
-   843a8:	91176063 	add	x3, x3, #0x5d8
+   843a8:	9117a063 	add	x3, x3, #0x5e8
    843ac:	52800041 	mov	w1, #0x2                   	// #2
    843b0:	52800f08 	mov	w8, #0x78                  	// #120
    843b4:	f90063e3 	str	x3, [sp, #192]
@@ -5355,9 +5379,9 @@ lower_el_aarch32_serror:
    8486c:	927df041 	and	x1, x2, #0xfffffffffffffff8
    84870:	f90043e1 	str	x1, [sp, #128]
    84874:	17fffee7 	b	84410 <_svfprintf_r+0x1250>
-   84878:	b0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   84878:	b0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    8487c:	b9416be1 	ldr	w1, [sp, #360]
-   84880:	911b4084 	add	x4, x4, #0x6d0
+   84880:	911b8084 	add	x4, x4, #0x6e0
    84884:	7100437f 	cmp	w27, #0x10
    84888:	54005bad 	b.le	853fc <_svfprintf_r+0x223c>
    8488c:	2a1b03e5 	mov	w5, w27
@@ -5396,8 +5420,8 @@ lower_el_aarch32_serror:
    84910:	2a1703e9 	mov	w9, w23
    84914:	2a1803eb 	mov	w11, w24
    84918:	2a1a03e7 	mov	w7, w26
-   8491c:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   84920:	9117c000 	add	x0, x0, #0x5f0
+   8491c:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   84920:	91180000 	add	x0, x0, #0x600
    84924:	f90063e0 	str	x0, [sp, #192]
    84928:	b9409be0 	ldr	w0, [sp, #152]
    8492c:	37280b89 	tbnz	w9, #5, 84a9c <_svfprintf_r+0x18dc>
@@ -5414,9 +5438,9 @@ lower_el_aarch32_serror:
    84958:	2a1803eb 	mov	w11, w24
    8495c:	2a1703fa 	mov	w26, w23
    84960:	17fffe37 	b	8423c <_svfprintf_r+0x107c>
-   84964:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
+   84964:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
    84968:	2a1703e9 	mov	w9, w23
-   8496c:	91176000 	add	x0, x0, #0x5d8
+   8496c:	9117a000 	add	x0, x0, #0x5e8
    84970:	2a1803eb 	mov	w11, w24
    84974:	2a1a03e7 	mov	w7, w26
    84978:	f90063e0 	str	x0, [sp, #192]
@@ -5432,9 +5456,9 @@ lower_el_aarch32_serror:
    849a0:	aa1c03e1 	mov	x1, x28
    849a4:	f90087f9 	str	x25, [sp, #264]
    849a8:	f9407bf9 	ldr	x25, [sp, #240]
-   849ac:	b0000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   849ac:	b0000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    849b0:	f94083fc 	ldr	x28, [sp, #256]
-   849b4:	911b4084 	add	x4, x4, #0x6d0
+   849b4:	911b8084 	add	x4, x4, #0x6e0
    849b8:	f9004bf7 	str	x23, [sp, #144]
    849bc:	2a0203f7 	mov	w23, w2
    849c0:	d280021b 	mov	x27, #0x10                  	// #16
@@ -5550,9 +5574,9 @@ lower_el_aarch32_serror:
    84b78:	927df041 	and	x1, x2, #0xfffffffffffffff8
    84b7c:	f90043e1 	str	x1, [sp, #128]
    84b80:	17fffdb7 	b	8425c <_svfprintf_r+0x109c>
-   84b84:	b0000089 	adrp	x9, 95000 <pmu_event_descr+0x70>
+   84b84:	b0000089 	adrp	x9, 95000 <pmu_event_descr+0x60>
    84b88:	b9416be2 	ldr	w2, [sp, #360]
-   84b8c:	911b4129 	add	x9, x9, #0x6d0
+   84b8c:	911b8129 	add	x9, x9, #0x6e0
    84b90:	7100435f 	cmp	w26, #0x10
    84b94:	5400040d 	b.le	84c14 <_svfprintf_r+0x1a54>
    84b98:	b900a3f7 	str	w23, [sp, #160]
@@ -5576,11 +5600,11 @@ lower_el_aarch32_serror:
    84be0:	94002fc8 	bl	90b00 <__ssprint_r>
    84be4:	35006e80 	cbnz	w0, 859b4 <_svfprintf_r+0x27f4>
    84be8:	510042f7 	sub	w23, w23, #0x10
-   84bec:	b0000083 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   84bec:	b0000083 	adrp	x3, 95000 <pmu_event_descr+0x60>
    84bf0:	f940bbe0 	ldr	x0, [sp, #368]
    84bf4:	aa1603e1 	mov	x1, x22
    84bf8:	b9416be2 	ldr	w2, [sp, #360]
-   84bfc:	911b4064 	add	x4, x3, #0x6d0
+   84bfc:	911b8064 	add	x4, x3, #0x6e0
    84c00:	710042ff 	cmp	w23, #0x10
    84c04:	54fffd8c 	b.gt	84bb4 <_svfprintf_r+0x19f4>
    84c08:	aa1a03e9 	mov	x9, x26
@@ -5624,9 +5648,9 @@ lower_el_aarch32_serror:
    84ca0:	94002f98 	bl	90b00 <__ssprint_r>
    84ca4:	35006880 	cbnz	w0, 859b4 <_svfprintf_r+0x27f4>
    84ca8:	f940bbe0 	ldr	x0, [sp, #368]
-   84cac:	b0000082 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   84cac:	b0000082 	adrp	x2, 95000 <pmu_event_descr+0x60>
    84cb0:	aa1603e1 	mov	x1, x22
-   84cb4:	911b4044 	add	x4, x2, #0x6d0
+   84cb4:	911b8044 	add	x4, x2, #0x6e0
    84cb8:	17ffff52 	b	84a00 <_svfprintf_r+0x1840>
    84cbc:	1e682100 	fcmp	d8, d8
    84cc0:	54008d26 	b.vs	85e64 <_svfprintf_r+0x2ca4>
@@ -5667,10 +5691,10 @@ lower_el_aarch32_serror:
    84d4c:	2a0703e3 	mov	w3, w7
    84d50:	7101851f 	cmp	w8, #0x61
    84d54:	91000463 	add	x3, x3, #0x1
-   84d58:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   84d5c:	b0000082 	adrp	x2, 95000 <pmu_event_descr+0x70>
-   84d60:	9117c000 	add	x0, x0, #0x5f0
-   84d64:	91176042 	add	x2, x2, #0x5d8
+   84d58:	b0000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   84d5c:	b0000082 	adrp	x2, 95000 <pmu_event_descr+0x60>
+   84d60:	91180000 	add	x0, x0, #0x600
+   84d64:	9117a042 	add	x2, x2, #0x5e8
    84d68:	8b030303 	add	x3, x24, x3
    84d6c:	9a800042 	csel	x2, x2, x0, eq	// eq = none
    84d70:	1e661002 	fmov	d2, #1.600000000000000000e+01
@@ -5869,17 +5893,17 @@ lower_el_aarch32_serror:
    85074:	94002ea3 	bl	90b00 <__ssprint_r>
    85078:	350049e0 	cbnz	w0, 859b4 <_svfprintf_r+0x27f4>
    8507c:	f940bbe0 	ldr	x0, [sp, #368]
-   85080:	90000083 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   85080:	90000083 	adrp	x3, 95000 <pmu_event_descr+0x60>
    85084:	39400322 	ldrb	w2, [x25]
    85088:	aa1603e1 	mov	x1, x22
-   8508c:	911b4064 	add	x4, x3, #0x6d0
+   8508c:	911b8064 	add	x4, x3, #0x6e0
    85090:	17fffe6e 	b	84a48 <_svfprintf_r+0x1888>
    85094:	710018ff 	cmp	w7, #0x6
    85098:	528000c3 	mov	w3, #0x6                   	// #6
    8509c:	1a8390e3 	csel	w3, w7, w3, ls	// ls = plast
-   850a0:	90000085 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   850a0:	90000085 	adrp	x5, 95000 <pmu_event_descr+0x60>
    850a4:	2a0303fb 	mov	w27, w3
-   850a8:	911820b8 	add	x24, x5, #0x608
+   850a8:	911860b8 	add	x24, x5, #0x618
    850ac:	d2800017 	mov	x23, #0x0                   	// #0
    850b0:	52800001 	mov	w1, #0x0                   	// #0
    850b4:	52800007 	mov	w7, #0x0                   	// #0
@@ -6453,10 +6477,10 @@ lower_el_aarch32_serror:
    85994:	94002c5b 	bl	90b00 <__ssprint_r>
    85998:	350000e0 	cbnz	w0, 859b4 <_svfprintf_r+0x27f4>
    8599c:	f940bbe0 	ldr	x0, [sp, #368]
-   859a0:	90000083 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   859a0:	90000083 	adrp	x3, 95000 <pmu_event_descr+0x60>
    859a4:	39400322 	ldrb	w2, [x25]
    859a8:	aa1603e1 	mov	x1, x22
-   859ac:	911b4064 	add	x4, x3, #0x6d0
+   859ac:	911b8064 	add	x4, x3, #0x6e0
    859b0:	17fffc2b 	b	84a5c <_svfprintf_r+0x189c>
    859b4:	f9404bf7 	ldr	x23, [sp, #144]
    859b8:	17fff83e 	b	83ab0 <_svfprintf_r+0x8f0>
@@ -6538,9 +6562,9 @@ lower_el_aarch32_serror:
    85ae8:	3100059b 	adds	w27, w12, #0x1
    85aec:	1a9f5363 	csel	w3, w27, wzr, pl	// pl = nfrst
    85af0:	17ffff6c 	b	858a0 <_svfprintf_r+0x26e0>
-   85af4:	90000084 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   85af4:	90000084 	adrp	x4, 95000 <pmu_event_descr+0x60>
    85af8:	4b0203fa 	neg	w26, w2
-   85afc:	911b4084 	add	x4, x4, #0x6d0
+   85afc:	911b8084 	add	x4, x4, #0x6e0
    85b00:	3100405f 	cmn	w2, #0x10
    85b04:	5400086a 	b.ge	85c10 <_svfprintf_r+0x2a50>  // b.tcont
    85b08:	aa1903e2 	mov	x2, x25
@@ -6761,11 +6785,11 @@ lower_el_aarch32_serror:
    85e64:	9e660100 	fmov	x0, d8
    85e68:	b7f81380 	tbnz	x0, #63, 860d8 <_svfprintf_r+0x2f18>
    85e6c:	3944bfe1 	ldrb	w1, [sp, #303]
-   85e70:	90000080 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   85e74:	90000085 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   85e70:	90000080 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   85e74:	90000085 	adrp	x5, 95000 <pmu_event_descr+0x60>
    85e78:	7101211f 	cmp	w8, #0x48
-   85e7c:	91174000 	add	x0, x0, #0x5d0
-   85e80:	911720a5 	add	x5, x5, #0x5c8
+   85e7c:	91178000 	add	x0, x0, #0x5e0
+   85e80:	911760a5 	add	x5, x5, #0x5d8
    85e84:	17fff7cb 	b	83db0 <_svfprintf_r+0xbf0>
    85e88:	b9409be0 	ldr	w0, [sp, #152]
    85e8c:	11002001 	add	w1, w0, #0x8
@@ -7103,14 +7127,14 @@ lower_el_aarch32_serror:
    863b4:	910803f6 	add	x22, sp, #0x200
    863b8:	6d0627e8 	stp	d8, d9, [sp, #96]
    863bc:	2f00e408 	movi	d8, #0x0
-   863c0:	90000094 	adrp	x20, 96000 <JIS_state_table+0x80>
-   863c4:	91320294 	add	x20, x20, #0xc80
+   863c0:	90000094 	adrp	x20, 96000 <JIS_state_table+0x70>
+   863c4:	91324294 	add	x20, x20, #0xc90
    863c8:	a9046bf9 	stp	x25, x26, [sp, #64]
    863cc:	aa0903f9 	mov	x25, x9
-   863d0:	f0000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
+   863d0:	f0000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
    863d4:	a90573fb 	stp	x27, x28, [sp, #80]
    863d8:	aa1603fc 	mov	x28, x22
-   863dc:	911bc000 	add	x0, x0, #0x6f0
+   863dc:	911c0000 	add	x0, x0, #0x700
    863e0:	a90363f7 	stp	x23, x24, [sp, #48]
    863e4:	b90073ff 	str	wzr, [sp, #112]
    863e8:	f90047e0 	str	x0, [sp, #136]
@@ -7307,9 +7331,9 @@ lower_el_aarch32_serror:
    866e4:	7100241f 	cmp	w0, #0x9
    866e8:	54ffff69 	b.ls	866d4 <_vfprintf_r+0x3e4>  // b.plast
    866ec:	17ffff9c 	b	8655c <_vfprintf_r+0x26c>
-   866f0:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   866f0:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    866f4:	b9418be1 	ldr	w1, [sp, #392]
-   866f8:	911ec084 	add	x4, x4, #0x7b0
+   866f8:	911f0084 	add	x4, x4, #0x7c0
    866fc:	7100435f 	cmp	w26, #0x10
    86700:	5400058d 	b.le	867b0 <_vfprintf_r+0x4c0>
    86704:	aa1c03e2 	mov	x2, x28
@@ -7387,9 +7411,9 @@ lower_el_aarch32_serror:
    86824:	54001001 	b.ne	86a24 <_vfprintf_r+0x734>  // b.any
    86828:	b9418be1 	ldr	w1, [sp, #392]
    8682c:	91000400 	add	x0, x0, #0x1
-   86830:	f0000062 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   86830:	f0000062 	adrp	x2, 95000 <pmu_event_descr+0x60>
    86834:	d2800024 	mov	x4, #0x1                   	// #1
-   86838:	91184042 	add	x2, x2, #0x610
+   86838:	91188042 	add	x2, x2, #0x620
    8683c:	11000421 	add	w1, w1, #0x1
    86840:	a9001382 	stp	x2, x4, [x28]
    86844:	9100439c 	add	x28, x28, #0x10
@@ -7415,9 +7439,9 @@ lower_el_aarch32_serror:
    86894:	5100043a 	sub	w26, w1, #0x1
    86898:	7100035f 	cmp	w26, #0x0
    8689c:	54ffef6d 	b.le	86688 <_vfprintf_r+0x398>
-   868a0:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   868a0:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    868a4:	b9418be1 	ldr	w1, [sp, #392]
-   868a8:	911ec084 	add	x4, x4, #0x7b0
+   868a8:	911f0084 	add	x4, x4, #0x7c0
    868ac:	7100435f 	cmp	w26, #0x10
    868b0:	5400b7ad 	b.le	87fa4 <_vfprintf_r+0x1cb4>
    868b4:	aa1c03e2 	mov	x2, x28
@@ -7449,9 +7473,9 @@ lower_el_aarch32_serror:
    8691c:	aa1603e2 	mov	x2, x22
    86920:	b9418be1 	ldr	w1, [sp, #392]
    86924:	17ffffed 	b	868d8 <_vfprintf_r+0x5e8>
-   86928:	f000006d 	adrp	x13, 95000 <pmu_event_descr+0x70>
+   86928:	f000006d 	adrp	x13, 95000 <pmu_event_descr+0x60>
    8692c:	b9418be1 	ldr	w1, [sp, #392]
-   86930:	911f01ad 	add	x13, x13, #0x7c0
+   86930:	911f41ad 	add	x13, x13, #0x7d0
    86934:	7100409f 	cmp	w4, #0x10
    86938:	5400060d 	b.le	869f8 <_vfprintf_r+0x708>
    8693c:	aa1c03e2 	mov	x2, x28
@@ -7517,9 +7541,9 @@ lower_el_aarch32_serror:
    86a2c:	54005d4c 	b.gt	875d4 <_vfprintf_r+0x12e4>
    86a30:	b9418be1 	ldr	w1, [sp, #392]
    86a34:	91000400 	add	x0, x0, #0x1
-   86a38:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   86a38:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    86a3c:	d2800027 	mov	x7, #0x1                   	// #1
-   86a40:	91184084 	add	x4, x4, #0x610
+   86a40:	91188084 	add	x4, x4, #0x620
    86a44:	11000421 	add	w1, w1, #0x1
    86a48:	a9001f84 	stp	x4, x7, [x28]
    86a4c:	9100439c 	add	x28, x28, #0x10
@@ -7595,9 +7619,9 @@ lower_el_aarch32_serror:
    86b64:	4b03017a 	sub	w26, w11, w3
    86b68:	7100035f 	cmp	w26, #0x0
    86b6c:	54ffd72d 	b.le	86650 <_vfprintf_r+0x360>
-   86b70:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   86b70:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    86b74:	b9418be1 	ldr	w1, [sp, #392]
-   86b78:	911ec084 	add	x4, x4, #0x7b0
+   86b78:	911f0084 	add	x4, x4, #0x7c0
    86b7c:	7100435f 	cmp	w26, #0x10
    86b80:	540005cd 	b.le	86c38 <_vfprintf_r+0x948>
    86b84:	aa1c03e2 	mov	x2, x28
@@ -7802,11 +7826,11 @@ lower_el_aarch32_serror:
    86ea0:	1e602118 	fcmpe	d8, #0.0
    86ea4:	5400db84 	b.mi	88a14 <_vfprintf_r+0x2724>  // b.first
    86ea8:	39453fe1 	ldrb	w1, [sp, #335]
-   86eac:	f0000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   86eb0:	f0000065 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   86eac:	f0000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   86eb0:	f0000065 	adrp	x5, 95000 <pmu_event_descr+0x60>
    86eb4:	7101211f 	cmp	w8, #0x48
-   86eb8:	91170000 	add	x0, x0, #0x5c0
-   86ebc:	9116e0a5 	add	x5, x5, #0x5b8
+   86eb8:	91174000 	add	x0, x0, #0x5d0
+   86ebc:	911720a5 	add	x5, x5, #0x5c8
    86ec0:	b90093ff 	str	wzr, [sp, #144]
    86ec4:	52800063 	mov	w3, #0x3                   	// #3
    86ec8:	b9009bff 	str	wzr, [sp, #152]
@@ -7844,8 +7868,8 @@ lower_el_aarch32_serror:
    86f48:	b9409fe2 	ldr	w2, [sp, #156]
    86f4c:	7100045f 	cmp	w2, #0x1
    86f50:	54fff02d 	b.le	86d54 <_vfprintf_r+0xa64>
-   86f54:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
-   86f58:	911ec084 	add	x4, x4, #0x7b0
+   86f54:	f0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
+   86f58:	911f0084 	add	x4, x4, #0x7c0
    86f5c:	7100445f 	cmp	w2, #0x11
    86f60:	540050ed 	b.le	8797c <_vfprintf_r+0x168c>
    86f64:	2a1a03f8 	mov	w24, w26
@@ -8091,9 +8115,9 @@ lower_el_aarch32_serror:
    87324:	f90043e1 	str	x1, [sp, #128]
    87328:	f9400000 	ldr	x0, [x0]
    8732c:	528f0602 	mov	w2, #0x7830                	// #30768
-   87330:	d0000063 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   87330:	d0000063 	adrp	x3, 95000 <pmu_event_descr+0x60>
    87334:	321f013a 	orr	w26, w9, #0x2
-   87338:	91176063 	add	x3, x3, #0x5d8
+   87338:	9117a063 	add	x3, x3, #0x5e8
    8733c:	52800041 	mov	w1, #0x2                   	// #2
    87340:	52800f08 	mov	w8, #0x78                  	// #120
    87344:	f90063e3 	str	x3, [sp, #192]
@@ -8190,9 +8214,9 @@ lower_el_aarch32_serror:
    874b0:	b940e3e7 	ldr	w7, [sp, #224]
    874b4:	b94113e3 	ldr	w3, [sp, #272]
    874b8:	17fffc64 	b	86648 <_vfprintf_r+0x358>
-   874bc:	d000006d 	adrp	x13, 95000 <pmu_event_descr+0x70>
+   874bc:	d000006d 	adrp	x13, 95000 <pmu_event_descr+0x60>
    874c0:	b9418be1 	ldr	w1, [sp, #392]
-   874c4:	911f01ad 	add	x13, x13, #0x7c0
+   874c4:	911f41ad 	add	x13, x13, #0x7d0
    874c8:	7100435f 	cmp	w26, #0x10
    874cc:	5400046d 	b.le	87558 <_vfprintf_r+0x1268>
    874d0:	2a1a03f8 	mov	w24, w26
@@ -8325,9 +8349,9 @@ lower_el_aarch32_serror:
    876cc:	4b1b035a 	sub	w26, w26, w27
    876d0:	7100035f 	cmp	w26, #0x0
    876d4:	54ff7dad 	b.le	86688 <_vfprintf_r+0x398>
-   876d8:	d0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   876d8:	d0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    876dc:	b9418be1 	ldr	w1, [sp, #392]
-   876e0:	911ec084 	add	x4, x4, #0x7b0
+   876e0:	911f0084 	add	x4, x4, #0x7c0
    876e4:	7100435f 	cmp	w26, #0x10
    876e8:	540045ed 	b.le	87fa4 <_vfprintf_r+0x1cb4>
    876ec:	2a1a03e5 	mov	w5, w26
@@ -8547,8 +8571,8 @@ lower_el_aarch32_serror:
    87a44:	2a1703e9 	mov	w9, w23
    87a48:	2a1803eb 	mov	w11, w24
    87a4c:	2a1a03e7 	mov	w7, w26
-   87a50:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   87a54:	9117c000 	add	x0, x0, #0x5f0
+   87a50:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   87a54:	91180000 	add	x0, x0, #0x600
    87a58:	f90063e0 	str	x0, [sp, #192]
    87a5c:	b9407fe0 	ldr	w0, [sp, #124]
    87a60:	372806e9 	tbnz	w9, #5, 87b3c <_vfprintf_r+0x184c>
@@ -8561,9 +8585,9 @@ lower_el_aarch32_serror:
    87a7c:	79400000 	ldrh	w0, [x0]
    87a80:	f90043e1 	str	x1, [sp, #128]
    87a84:	14000034 	b	87b54 <_vfprintf_r+0x1864>
-   87a88:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
+   87a88:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
    87a8c:	2a1703e9 	mov	w9, w23
-   87a90:	91176000 	add	x0, x0, #0x5d8
+   87a90:	9117a000 	add	x0, x0, #0x5e8
    87a94:	2a1803eb 	mov	w11, w24
    87a98:	2a1a03e7 	mov	w7, w26
    87a9c:	f90063e0 	str	x0, [sp, #192]
@@ -8728,10 +8752,10 @@ lower_el_aarch32_serror:
    87d18:	2a0703e3 	mov	w3, w7
    87d1c:	7101851f 	cmp	w8, #0x61
    87d20:	91000463 	add	x3, x3, #0x1
-   87d24:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   87d28:	d0000062 	adrp	x2, 95000 <pmu_event_descr+0x70>
-   87d2c:	9117c000 	add	x0, x0, #0x5f0
-   87d30:	91176042 	add	x2, x2, #0x5d8
+   87d24:	d0000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   87d28:	d0000062 	adrp	x2, 95000 <pmu_event_descr+0x60>
+   87d2c:	91180000 	add	x0, x0, #0x600
+   87d30:	9117a042 	add	x2, x2, #0x5e8
    87d34:	8b030303 	add	x3, x24, x3
    87d38:	9a800042 	csel	x2, x2, x0, eq	// eq = none
    87d3c:	1e661002 	fmov	d2, #1.600000000000000000e+01
@@ -8940,9 +8964,9 @@ lower_el_aarch32_serror:
    88068:	710018ff 	cmp	w7, #0x6
    8806c:	528000c3 	mov	w3, #0x6                   	// #6
    88070:	1a8390e3 	csel	w3, w7, w3, ls	// ls = plast
-   88074:	b0000065 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   88074:	b0000065 	adrp	x5, 95000 <pmu_event_descr+0x60>
    88078:	2a0303fb 	mov	w27, w3
-   8807c:	911820b8 	add	x24, x5, #0x608
+   8807c:	911860b8 	add	x24, x5, #0x618
    88080:	d2800017 	mov	x23, #0x0                   	// #0
    88084:	52800001 	mov	w1, #0x0                   	// #0
    88088:	52800007 	mov	w7, #0x0                   	// #0
@@ -8965,9 +8989,9 @@ lower_el_aarch32_serror:
    880cc:	79c022a0 	ldrsh	w0, [x21, #16]
    880d0:	b9018bff 	str	wzr, [sp, #392]
    880d4:	17fffa92 	b	86b1c <_vfprintf_r+0x82c>
-   880d8:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   880d8:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    880dc:	b9418be1 	ldr	w1, [sp, #392]
-   880e0:	911ec084 	add	x4, x4, #0x7b0
+   880e0:	911f0084 	add	x4, x4, #0x7c0
    880e4:	7100437f 	cmp	w27, #0x10
    880e8:	54001d6d 	b.le	88494 <_vfprintf_r+0x21a4>
    880ec:	2a1b03e5 	mov	w5, w27
@@ -9413,9 +9437,9 @@ lower_el_aarch32_serror:
    887cc:	aa1c03e1 	mov	x1, x28
    887d0:	f9008bf9 	str	x25, [sp, #272]
    887d4:	f9407ff9 	ldr	x25, [sp, #248]
-   887d8:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   887d8:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    887dc:	f94083fc 	ldr	x28, [sp, #256]
-   887e0:	911ec084 	add	x4, x4, #0x7b0
+   887e0:	911f0084 	add	x4, x4, #0x7c0
    887e4:	f9004bf7 	str	x23, [sp, #144]
    887e8:	2a0203f7 	mov	w23, w2
    887ec:	d280021b 	mov	x27, #0x10                  	// #16
@@ -9479,9 +9503,9 @@ lower_el_aarch32_serror:
    888d4:	51000442 	sub	w2, w2, #0x1
    888d8:	b9009be2 	str	w2, [sp, #152]
    888dc:	17ffffcb 	b	88808 <_vfprintf_r+0x2518>
-   888e0:	b0000069 	adrp	x9, 95000 <pmu_event_descr+0x70>
+   888e0:	b0000069 	adrp	x9, 95000 <pmu_event_descr+0x60>
    888e4:	b9418be2 	ldr	w2, [sp, #392]
-   888e8:	911ec129 	add	x9, x9, #0x7b0
+   888e8:	911f0129 	add	x9, x9, #0x7c0
    888ec:	7100435f 	cmp	w26, #0x10
    888f0:	5400050d 	b.le	88990 <_vfprintf_r+0x26a0>
    888f4:	b900a3f7 	str	w23, [sp, #160]
@@ -9505,10 +9529,10 @@ lower_el_aarch32_serror:
    8893c:	940003b9 	bl	89820 <__sprint_r>
    88940:	35ff0e20 	cbnz	w0, 86b04 <_vfprintf_r+0x814>
    88944:	f940cbe0 	ldr	x0, [sp, #400]
-   88948:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   88948:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x60>
    8894c:	b9418be2 	ldr	w2, [sp, #392]
    88950:	aa1603e1 	mov	x1, x22
-   88954:	911ec064 	add	x4, x3, #0x7b0
+   88954:	911f0064 	add	x4, x3, #0x7c0
    88958:	17ffffeb 	b	88904 <_vfprintf_r+0x2614>
    8895c:	910603e2 	add	x2, sp, #0x180
    88960:	aa1503e1 	mov	x1, x21
@@ -9516,9 +9540,9 @@ lower_el_aarch32_serror:
    88968:	940003ae 	bl	89820 <__sprint_r>
    8896c:	35ff0cc0 	cbnz	w0, 86b04 <_vfprintf_r+0x814>
    88970:	f940cbe0 	ldr	x0, [sp, #400]
-   88974:	b0000062 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   88974:	b0000062 	adrp	x2, 95000 <pmu_event_descr+0x60>
    88978:	aa1603e1 	mov	x1, x22
-   8897c:	911ec044 	add	x4, x2, #0x7b0
+   8897c:	911f0044 	add	x4, x2, #0x7c0
    88980:	17ffffac 	b	88830 <_vfprintf_r+0x2540>
    88984:	aa1a03e9 	mov	x9, x26
    88988:	2a1703fa 	mov	w26, w23
@@ -9540,10 +9564,10 @@ lower_el_aarch32_serror:
    889c8:	94000396 	bl	89820 <__sprint_r>
    889cc:	35ff09c0 	cbnz	w0, 86b04 <_vfprintf_r+0x814>
    889d0:	f940cbe0 	ldr	x0, [sp, #400]
-   889d4:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   889d4:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x60>
    889d8:	39400322 	ldrb	w2, [x25]
    889dc:	aa1603e1 	mov	x1, x22
-   889e0:	911ec064 	add	x4, x3, #0x7b0
+   889e0:	911f0064 	add	x4, x3, #0x7c0
    889e4:	17ffffa5 	b	88878 <_vfprintf_r+0x2588>
    889e8:	b940efe0 	ldr	w0, [sp, #236]
    889ec:	11004001 	add	w1, w0, #0x10
@@ -9705,10 +9729,10 @@ lower_el_aarch32_serror:
    88c5c:	940002f1 	bl	89820 <__sprint_r>
    88c60:	35fef520 	cbnz	w0, 86b04 <_vfprintf_r+0x814>
    88c64:	f940cbe0 	ldr	x0, [sp, #400]
-   88c68:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x70>
+   88c68:	b0000063 	adrp	x3, 95000 <pmu_event_descr+0x60>
    88c6c:	39400322 	ldrb	w2, [x25]
    88c70:	aa1603e1 	mov	x1, x22
-   88c74:	911ec064 	add	x4, x3, #0x7b0
+   88c74:	911f0064 	add	x4, x3, #0x7c0
    88c78:	17ffff05 	b	8888c <_vfprintf_r+0x259c>
    88c7c:	910603e2 	add	x2, sp, #0x180
    88c80:	aa1503e1 	mov	x1, x21
@@ -9784,9 +9808,9 @@ lower_el_aarch32_serror:
    88d98:	b94093e9 	ldr	w9, [sp, #144]
    88d9c:	b940a3e3 	ldr	w3, [sp, #160]
    88da0:	17fffa49 	b	876c4 <_vfprintf_r+0x13d4>
-   88da4:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x70>
+   88da4:	b0000064 	adrp	x4, 95000 <pmu_event_descr+0x60>
    88da8:	4b0203fa 	neg	w26, w2
-   88dac:	911ec084 	add	x4, x4, #0x7b0
+   88dac:	911f0084 	add	x4, x4, #0x7c0
    88db0:	3100405f 	cmn	w2, #0x10
    88db4:	54000cca 	b.ge	88f4c <_vfprintf_r+0x2c5c>  // b.tcont
    88db8:	aa1903e2 	mov	x2, x25
@@ -10003,11 +10027,11 @@ lower_el_aarch32_serror:
    89104:	9e660100 	fmov	x0, d8
    89108:	b7f81780 	tbnz	x0, #63, 893f8 <_vfprintf_r+0x3108>
    8910c:	39453fe1 	ldrb	w1, [sp, #335]
-   89110:	90000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   89114:	90000065 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   89110:	90000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   89114:	90000065 	adrp	x5, 95000 <pmu_event_descr+0x60>
    89118:	7101211f 	cmp	w8, #0x48
-   8911c:	91174000 	add	x0, x0, #0x5d0
-   89120:	911720a5 	add	x5, x5, #0x5c8
+   8911c:	91178000 	add	x0, x0, #0x5e0
+   89120:	911760a5 	add	x5, x5, #0x5d8
    89124:	17fff767 	b	86ec0 <_vfprintf_r+0xbd0>
    89128:	b9407fe0 	ldr	w0, [sp, #124]
    8912c:	11002001 	add	w1, w0, #0x8
@@ -10330,12 +10354,12 @@ lower_el_aarch32_serror:
 
 0000000000089620 <vfprintf>:
    89620:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   89624:	b0000064 	adrp	x4, 96000 <JIS_state_table+0x80>
+   89624:	b0000064 	adrp	x4, 96000 <JIS_state_table+0x70>
    89628:	aa0003e3 	mov	x3, x0
    8962c:	910003fd 	mov	x29, sp
    89630:	ad400440 	ldp	q0, q1, [x2]
    89634:	aa0103e2 	mov	x2, x1
-   89638:	f940f880 	ldr	x0, [x4, #496]
+   89638:	f9410080 	ldr	x0, [x4, #512]
    8963c:	aa0303e1 	mov	x1, x3
    89640:	910043e3 	add	x3, sp, #0x10
    89644:	ad0087e0 	stp	q0, q1, [sp, #16]
@@ -10509,12 +10533,12 @@ lower_el_aarch32_serror:
    898d4:	7100283f 	cmp	w1, #0xa
    898d8:	54000580 	b.eq	89988 <_vfiprintf_r+0x148>  // b.none
    898dc:	910643f7 	add	x23, sp, #0x190
-   898e0:	b0000075 	adrp	x21, 96000 <JIS_state_table+0x80>
-   898e4:	913202b5 	add	x21, x21, #0xc80
+   898e0:	b0000075 	adrp	x21, 96000 <JIS_state_table+0x70>
+   898e4:	913242b5 	add	x21, x21, #0xc90
    898e8:	a90573fb 	stp	x27, x28, [sp, #80]
    898ec:	aa1703fb 	mov	x27, x23
-   898f0:	90000060 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   898f4:	911f4000 	add	x0, x0, #0x7d0
+   898f0:	90000060 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   898f4:	911f8000 	add	x0, x0, #0x7e0
    898f8:	b90063ff 	str	wzr, [sp, #96]
    898fc:	f9003be0 	str	x0, [sp, #112]
    89900:	f90043ff 	str	xzr, [sp, #128]
@@ -10781,8 +10805,8 @@ lower_el_aarch32_serror:
    89d14:	7100419f 	cmp	w12, #0x10
    89d18:	54009bad 	b.le	8b08c <_vfiprintf_r+0x184c>
    89d1c:	aa1a03e2 	mov	x2, x26
-   89d20:	9000006a 	adrp	x10, 95000 <pmu_event_descr+0x70>
-   89d24:	9122414a 	add	x10, x10, #0x890
+   89d20:	9000006a 	adrp	x10, 95000 <pmu_event_descr+0x60>
+   89d24:	9122814a 	add	x10, x10, #0x8a0
    89d28:	2a1903fa 	mov	w26, w25
    89d2c:	d280020b 	mov	x11, #0x10                  	// #16
    89d30:	2a0303f9 	mov	w25, w3
@@ -10857,8 +10881,8 @@ lower_el_aarch32_serror:
    89e44:	b940b3e8 	ldr	w8, [sp, #176]
    89e48:	7100007f 	cmp	w3, #0x0
    89e4c:	54ffee0d 	b.le	89c0c <_vfiprintf_r+0x3cc>
-   89e50:	9000006a 	adrp	x10, 95000 <pmu_event_descr+0x70>
-   89e54:	9122414a 	add	x10, x10, #0x890
+   89e50:	9000006a 	adrp	x10, 95000 <pmu_event_descr+0x60>
+   89e54:	9122814a 	add	x10, x10, #0x8a0
    89e58:	7100407f 	cmp	w3, #0x10
    89e5c:	5400060d 	b.le	89f1c <_vfiprintf_r+0x6dc>
    89e60:	d280020c 	mov	x12, #0x10                  	// #16
@@ -10967,8 +10991,8 @@ lower_el_aarch32_serror:
    89ffc:	17fffeff 	b	89bf8 <_vfiprintf_r+0x3b8>
    8a000:	7100415f 	cmp	w10, #0x10
    8a004:	540081ed 	b.le	8b040 <_vfiprintf_r+0x1800>
-   8a008:	f000004b 	adrp	x11, 95000 <pmu_event_descr+0x70>
-   8a00c:	9122816b 	add	x11, x11, #0x8a0
+   8a008:	f000004b 	adrp	x11, 95000 <pmu_event_descr+0x60>
+   8a00c:	9122c16b 	add	x11, x11, #0x8b0
    8a010:	291633e4 	stp	w4, w12, [sp, #176]
    8a014:	aa1a03e4 	mov	x4, x26
    8a018:	d280020d 	mov	x13, #0x10                  	// #16
@@ -11044,8 +11068,8 @@ lower_el_aarch32_serror:
    8a130:	b9411be2 	ldr	w2, [sp, #280]
    8a134:	7100429f 	cmp	w20, #0x10
    8a138:	540078cd 	b.le	8b050 <_vfiprintf_r+0x1810>
-   8a13c:	f000004b 	adrp	x11, 95000 <pmu_event_descr+0x70>
-   8a140:	9122816b 	add	x11, x11, #0x8a0
+   8a13c:	f000004b 	adrp	x11, 95000 <pmu_event_descr+0x60>
+   8a140:	9122c16b 	add	x11, x11, #0x8b0
    8a144:	2a0403fc 	mov	w28, w4
    8a148:	d2800219 	mov	x25, #0x10                  	// #16
    8a14c:	f90047f8 	str	x24, [sp, #136]
@@ -11363,9 +11387,9 @@ lower_el_aarch32_serror:
    8a62c:	927df038 	and	x24, x1, #0xfffffffffffffff8
    8a630:	f9400001 	ldr	x1, [x0]
    8a634:	528f0600 	mov	w0, #0x7830                	// #30768
-   8a638:	f0000042 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   8a638:	f0000042 	adrp	x2, 95000 <pmu_event_descr+0x60>
    8a63c:	321f0284 	orr	w4, w20, #0x2
-   8a640:	91176042 	add	x2, x2, #0x5d8
+   8a640:	9117a042 	add	x2, x2, #0x5e8
    8a644:	f90043e2 	str	x2, [sp, #128]
    8a648:	7901e3e0 	strh	w0, [sp, #240]
    8a64c:	52800040 	mov	w0, #0x2                   	// #2
@@ -11548,8 +11572,8 @@ lower_el_aarch32_serror:
    8a910:	17fffc9e 	b	89b88 <_vfiprintf_r+0x348>
    8a914:	2a1903e8 	mov	w8, w25
    8a918:	2a1c03e3 	mov	w3, w28
-   8a91c:	f0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8a920:	9117c021 	add	x1, x1, #0x5f0
+   8a91c:	f0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8a920:	91180021 	add	x1, x1, #0x600
    8a924:	f90043e1 	str	x1, [sp, #128]
    8a928:	b94067e1 	ldr	w1, [sp, #100]
    8a92c:	372802d4 	tbnz	w20, #5, 8a984 <_vfiprintf_r+0x1144>
@@ -11565,9 +11589,9 @@ lower_el_aarch32_serror:
    8a954:	2a1c03e3 	mov	w3, w28
    8a958:	2a1403e4 	mov	w4, w20
    8a95c:	17fffeeb 	b	8a508 <_vfiprintf_r+0xcc8>
-   8a960:	f0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8a960:	f0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8a964:	2a1903e8 	mov	w8, w25
-   8a968:	91176021 	add	x1, x1, #0x5d8
+   8a968:	9117a021 	add	x1, x1, #0x5e8
    8a96c:	2a1c03e3 	mov	w3, w28
    8a970:	f90043e1 	str	x1, [sp, #128]
    8a974:	17ffffed 	b	8a928 <_vfiprintf_r+0x10e8>
@@ -11749,10 +11773,10 @@ lower_el_aarch32_serror:
    8ac34:	7100187f 	cmp	w3, #0x6
    8ac38:	528000c9 	mov	w9, #0x6                   	// #6
    8ac3c:	1a899079 	csel	w25, w3, w9, ls	// ls = plast
-   8ac40:	f0000047 	adrp	x7, 95000 <pmu_event_descr+0x70>
+   8ac40:	f0000047 	adrp	x7, 95000 <pmu_event_descr+0x60>
    8ac44:	f94047f8 	ldr	x24, [sp, #136]
    8ac48:	2a1903e4 	mov	w4, w25
-   8ac4c:	911820fc 	add	x28, x7, #0x608
+   8ac4c:	911860fc 	add	x28, x7, #0x618
    8ac50:	17fffbb3 	b	89b1c <_vfiprintf_r+0x2dc>
    8ac54:	f94093e0 	ldr	x0, [sp, #288]
    8ac58:	b5002040 	cbnz	x0, 8b060 <_vfiprintf_r+0x1820>
@@ -12005,13 +12029,13 @@ lower_el_aarch32_serror:
    8b034:	52800003 	mov	w3, #0x0                   	// #0
    8b038:	f90037ff 	str	xzr, [sp, #104]
    8b03c:	17fffd2c 	b	8a4ec <_vfiprintf_r+0xcac>
-   8b040:	d000004b 	adrp	x11, 95000 <pmu_event_descr+0x70>
+   8b040:	d000004b 	adrp	x11, 95000 <pmu_event_descr+0x60>
    8b044:	2a0203ef 	mov	w15, w2
-   8b048:	9122816b 	add	x11, x11, #0x8a0
+   8b048:	9122c16b 	add	x11, x11, #0x8b0
    8b04c:	17fffc24 	b	8a0dc <_vfiprintf_r+0x89c>
-   8b050:	d000004b 	adrp	x11, 95000 <pmu_event_descr+0x70>
+   8b050:	d000004b 	adrp	x11, 95000 <pmu_event_descr+0x60>
    8b054:	11000446 	add	w6, w2, #0x1
-   8b058:	9122816b 	add	x11, x11, #0x8a0
+   8b058:	9122c16b 	add	x11, x11, #0x8b0
    8b05c:	17fffc5e 	b	8a1d4 <_vfiprintf_r+0x994>
    8b060:	aa1303e0 	mov	x0, x19
    8b064:	910443e2 	add	x2, sp, #0x110
@@ -12024,9 +12048,9 @@ lower_el_aarch32_serror:
    8b080:	b90067e1 	str	w1, [sp, #100]
    8b084:	8b20c040 	add	x0, x2, w0, sxtw
    8b088:	17fffe0b 	b	8a8b4 <_vfiprintf_r+0x1074>
-   8b08c:	d000004a 	adrp	x10, 95000 <pmu_event_descr+0x70>
+   8b08c:	d000004a 	adrp	x10, 95000 <pmu_event_descr+0x60>
    8b090:	2a0b03ed 	mov	w13, w11
-   8b094:	9122414a 	add	x10, x10, #0x890
+   8b094:	9122814a 	add	x10, x10, #0x8a0
    8b098:	17fffb54 	b	89de8 <_vfiprintf_r+0x5a8>
    8b09c:	b940b2c0 	ldr	w0, [x22, #176]
    8b0a0:	370000a0 	tbnz	w0, #0, 8b0b4 <_vfiprintf_r+0x1874>
@@ -12272,12 +12296,12 @@ lower_el_aarch32_serror:
 
 000000000008b460 <vfiprintf>:
    8b460:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   8b464:	f0000044 	adrp	x4, 96000 <JIS_state_table+0x80>
+   8b464:	f0000044 	adrp	x4, 96000 <JIS_state_table+0x70>
    8b468:	aa0003e3 	mov	x3, x0
    8b46c:	910003fd 	mov	x29, sp
    8b470:	ad400440 	ldp	q0, q1, [x2]
    8b474:	aa0103e2 	mov	x2, x1
-   8b478:	f940f880 	ldr	x0, [x4, #496]
+   8b478:	f9410080 	ldr	x0, [x4, #512]
    8b47c:	aa0303e1 	mov	x1, x3
    8b480:	910043e3 	add	x3, sp, #0x10
    8b484:	ad0087e0 	stp	q0, q1, [sp, #16]
@@ -12360,8 +12384,8 @@ lower_el_aarch32_serror:
    8b5b0:	d2800413 	mov	x19, #0x20                  	// #32
    8b5b4:	d2800a01 	mov	x1, #0x50                  	// #80
    8b5b8:	52800080 	mov	w0, #0x4                   	// #4
-   8b5bc:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x80>
-   8b5c0:	910e0294 	add	x20, x20, #0x380
+   8b5bc:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x70>
+   8b5c0:	910e4294 	add	x20, x20, #0x390
    8b5c4:	8b010281 	add	x1, x20, x1
    8b5c8:	11000800 	add	w0, w0, #0x2
    8b5cc:	d1004021 	sub	x1, x1, #0x10
@@ -12369,8 +12393,8 @@ lower_el_aarch32_serror:
    8b5d4:	eb01005f 	cmp	x2, x1
    8b5d8:	54001d61 	b.ne	8b984 <_malloc_r+0x404>  // b.any
    8b5dc:	f9401285 	ldr	x5, [x20, #32]
-   8b5e0:	f0000047 	adrp	x7, 96000 <JIS_state_table+0x80>
-   8b5e4:	910e40e7 	add	x7, x7, #0x390
+   8b5e0:	f0000047 	adrp	x7, 96000 <JIS_state_table+0x70>
+   8b5e4:	910e80e7 	add	x7, x7, #0x3a0
    8b5e8:	eb0700bf 	cmp	x5, x7
    8b5ec:	54000f80 	b.eq	8b7dc <_malloc_r+0x25c>  // b.none
    8b5f0:	f94004a1 	ldr	x1, [x5, #8]
@@ -12472,8 +12496,8 @@ lower_el_aarch32_serror:
    8b770:	1100e026 	add	w6, w1, #0x38
    8b774:	531f7805 	lsl	w5, w0, #1
    8b778:	937d7ca5 	sbfiz	x5, x5, #3, #32
-   8b77c:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x80>
-   8b780:	910e0294 	add	x20, x20, #0x380
+   8b77c:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x70>
+   8b780:	910e4294 	add	x20, x20, #0x390
    8b784:	8b050285 	add	x5, x20, x5
    8b788:	d10040a5 	sub	x5, x5, #0x10
    8b78c:	f9400ca2 	ldr	x2, [x5, #24]
@@ -12491,8 +12515,8 @@ lower_el_aarch32_serror:
    8b7bc:	f1007c7f 	cmp	x3, #0x1f
    8b7c0:	54fffeed 	b.le	8b79c <_malloc_r+0x21c>
    8b7c4:	f9401285 	ldr	x5, [x20, #32]
-   8b7c8:	f0000047 	adrp	x7, 96000 <JIS_state_table+0x80>
-   8b7cc:	910e40e7 	add	x7, x7, #0x390
+   8b7c8:	f0000047 	adrp	x7, 96000 <JIS_state_table+0x70>
+   8b7cc:	910e80e7 	add	x7, x7, #0x3a0
    8b7d0:	2a0603e0 	mov	w0, w6
    8b7d4:	eb0700bf 	cmp	x5, x7
    8b7d8:	54fff0c1 	b.ne	8b5f0 <_malloc_r+0x70>  // b.any
@@ -12512,10 +12536,10 @@ lower_el_aarch32_serror:
    8b810:	540009a2 	b.cs	8b944 <_malloc_r+0x3c4>  // b.hs, b.nlast
    8b814:	f00013a1 	adrp	x1, 302000 <irq_handlers+0x1370>
    8b818:	a90573fb 	stp	x27, x28, [sp, #80]
-   8b81c:	f000005c 	adrp	x28, 96000 <JIS_state_table+0x80>
+   8b81c:	f000005c 	adrp	x28, 96000 <JIS_state_table+0x70>
    8b820:	f9478c21 	ldr	x1, [x1, #3864]
    8b824:	d28203e3 	mov	x3, #0x101f                	// #4127
-   8b828:	f941b782 	ldr	x2, [x28, #872]
+   8b828:	f941bf82 	ldr	x2, [x28, #888]
    8b82c:	8b010261 	add	x1, x19, x1
    8b830:	8b030036 	add	x22, x1, x3
    8b834:	91008021 	add	x1, x1, #0x20
@@ -12733,7 +12757,7 @@ lower_el_aarch32_serror:
    8bb84:	b94ee320 	ldr	w0, [x25, #3808]
    8bb88:	0b160000 	add	w0, w0, w22
    8bb8c:	b90ee320 	str	w0, [x25, #3808]
-   8bb90:	f941b781 	ldr	x1, [x28, #872]
+   8bb90:	f941bf81 	ldr	x1, [x28, #888]
    8bb94:	b100043f 	cmn	x1, #0x1
    8bb98:	54000b80 	b.eq	8bd08 <_malloc_r+0x788>  // b.none
    8bb9c:	cb1b031b 	sub	x27, x24, x27
@@ -12767,9 +12791,9 @@ lower_el_aarch32_serror:
    8bc0c:	f1007eff 	cmp	x23, #0x1f
    8bc10:	540004c9 	b.ls	8bca8 <_malloc_r+0x728>  // b.plast
    8bc14:	f9400740 	ldr	x0, [x26, #8]
-   8bc18:	d0000042 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   8bc18:	d0000042 	adrp	x2, 95000 <pmu_event_descr+0x60>
    8bc1c:	d10062e1 	sub	x1, x23, #0x18
-   8bc20:	3dc22c40 	ldr	q0, [x2, #2224]
+   8bc20:	3dc23040 	ldr	q0, [x2, #2240]
    8bc24:	927cec21 	and	x1, x1, #0xfffffffffffffff0
    8bc28:	8b010342 	add	x2, x26, x1
    8bc2c:	92400000 	and	x0, x0, #0x1
@@ -12827,7 +12851,7 @@ lower_el_aarch32_serror:
    8bcfc:	531f7805 	lsl	w5, w0, #1
    8bd00:	937d7ca5 	sbfiz	x5, x5, #3, #32
    8bd04:	17fffe9e 	b	8b77c <_malloc_r+0x1fc>
-   8bd08:	f901b798 	str	x24, [x28, #872]
+   8bd08:	f901bf98 	str	x24, [x28, #888]
    8bd0c:	17ffffa7 	b	8bba8 <_malloc_r+0x628>
    8bd10:	f105505f 	cmp	x2, #0x154
    8bd14:	54000288 	b.hi	8bd64 <_malloc_r+0x7e4>  // b.pmore
@@ -12876,10 +12900,10 @@ lower_el_aarch32_serror:
    8bdbc:	a90153f3 	stp	x19, x20, [sp, #16]
    8bdc0:	aa0303f3 	mov	x19, x3
    8bdc4:	f100027f 	cmp	x19, #0x0
-   8bdc8:	f0000043 	adrp	x3, 96000 <JIS_state_table+0x80>
+   8bdc8:	f0000043 	adrp	x3, 96000 <JIS_state_table+0x70>
    8bdcc:	9a930093 	csel	x19, x4, x19, eq	// eq = none
    8bdd0:	aa0003f4 	mov	x20, x0
-   8bdd4:	f946b064 	ldr	x4, [x3, #3424]
+   8bdd4:	f946b864 	ldr	x4, [x3, #3440]
    8bdd8:	aa1303e3 	mov	x3, x19
    8bddc:	b4000121 	cbz	x1, 8be00 <_wcrtomb_r+0x50>
    8bde0:	d63f0080 	blr	x4
@@ -12908,15 +12932,15 @@ lower_el_aarch32_serror:
 
 000000000008be40 <wcrtomb>:
    8be40:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   8be44:	f0000044 	adrp	x4, 96000 <JIS_state_table+0x80>
-   8be48:	f0000043 	adrp	x3, 96000 <JIS_state_table+0x80>
+   8be44:	f0000044 	adrp	x4, 96000 <JIS_state_table+0x70>
+   8be48:	f0000043 	adrp	x3, 96000 <JIS_state_table+0x70>
    8be4c:	910003fd 	mov	x29, sp
    8be50:	a90153f3 	stp	x19, x20, [sp, #16]
    8be54:	f100005f 	cmp	x2, #0x0
-   8be58:	f940f894 	ldr	x20, [x4, #496]
+   8be58:	f9410094 	ldr	x20, [x4, #512]
    8be5c:	9104f284 	add	x4, x20, #0x13c
    8be60:	9a820093 	csel	x19, x4, x2, eq	// eq = none
-   8be64:	f946b064 	ldr	x4, [x3, #3424]
+   8be64:	f946b864 	ldr	x4, [x3, #3440]
    8be68:	b40001a0 	cbz	x0, 8be9c <wcrtomb+0x5c>
    8be6c:	2a0103e2 	mov	w2, w1
    8be70:	aa0003e1 	mov	x1, x0
@@ -12994,19 +13018,19 @@ lower_el_aarch32_serror:
    8bf80:	a9bc7bfd 	stp	x29, x30, [sp, #-64]!
    8bf84:	910003fd 	mov	x29, sp
    8bf88:	a90153f3 	stp	x19, x20, [sp, #16]
-   8bf8c:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x80>
-   8bf90:	91320294 	add	x20, x20, #0xc80
+   8bf8c:	f0000054 	adrp	x20, 96000 <JIS_state_table+0x70>
+   8bf90:	91324294 	add	x20, x20, #0xc90
    8bf94:	a9025bf5 	stp	x21, x22, [sp, #32]
-   8bf98:	f0000055 	adrp	x21, 96000 <JIS_state_table+0x80>
-   8bf9c:	913302b5 	add	x21, x21, #0xcc0
+   8bf98:	f0000055 	adrp	x21, 96000 <JIS_state_table+0x70>
+   8bf9c:	913342b5 	add	x21, x21, #0xcd0
    8bfa0:	f9001bf7 	str	x23, [sp, #48]
-   8bfa4:	f0000057 	adrp	x23, 96000 <JIS_state_table+0x80>
-   8bfa8:	912e42f7 	add	x23, x23, #0xb90
-   8bfac:	f0000056 	adrp	x22, 96000 <JIS_state_table+0x80>
+   8bfa4:	f0000057 	adrp	x23, 96000 <JIS_state_table+0x70>
+   8bfa8:	912e82f7 	add	x23, x23, #0xba0
+   8bfac:	f0000056 	adrp	x22, 96000 <JIS_state_table+0x70>
    8bfb0:	aa1503f3 	mov	x19, x21
-   8bfb4:	913282c1 	add	x1, x22, #0xca0
+   8bfb4:	9132c2c1 	add	x1, x22, #0xcb0
    8bfb8:	91038294 	add	x20, x20, #0xe0
-   8bfbc:	913282d6 	add	x22, x22, #0xca0
+   8bfbc:	9132c2d6 	add	x22, x22, #0xcb0
    8bfc0:	aa1703e0 	mov	x0, x23
    8bfc4:	9400106f 	bl	90180 <strcpy>
    8bfc8:	aa1303e1 	mov	x1, x19
@@ -13022,8 +13046,8 @@ lower_el_aarch32_serror:
    8bff0:	f9401bf7 	ldr	x23, [sp, #48]
    8bff4:	a8c47bfd 	ldp	x29, x30, [sp], #64
    8bff8:	d65f03c0 	ret
-   8bffc:	d0000053 	adrp	x19, 95000 <pmu_event_descr+0x70>
-   8c000:	91230273 	add	x19, x19, #0x8c0
+   8bffc:	d0000053 	adrp	x19, 95000 <pmu_event_descr+0x60>
+   8c000:	91234273 	add	x19, x19, #0x8d0
    8c004:	d503201f 	nop
    8c008:	aa1303e1 	mov	x1, x19
    8c00c:	aa1703e0 	mov	x0, x23
@@ -13064,10 +13088,10 @@ lower_el_aarch32_serror:
    8c098:	a8ca7bfd 	ldp	x29, x30, [sp], #160
    8c09c:	d65f03c0 	ret
    8c0a0:	aa1303e0 	mov	x0, x19
-   8c0a4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c0a8:	b0000055 	adrp	x21, 95000 <pmu_event_descr+0x70>
-   8c0ac:	91232021 	add	x1, x1, #0x8c8
-   8c0b0:	912342b5 	add	x21, x21, #0x8d0
+   8c0a4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c0a8:	b0000055 	adrp	x21, 95000 <pmu_event_descr+0x60>
+   8c0ac:	91236021 	add	x1, x1, #0x8d8
+   8c0b0:	912382b5 	add	x21, x21, #0x8e0
    8c0b4:	94000ff3 	bl	90080 <strcmp>
    8c0b8:	34000ca0 	cbz	w0, 8c24c <__loadlocale+0x1fc>
    8c0bc:	aa1503e1 	mov	x1, x21
@@ -13102,9 +13126,9 @@ lower_el_aarch32_serror:
    8c130:	6a01001f 	tst	w0, w1
    8c134:	540007a1 	b.ne	8c228 <__loadlocale+0x1d8>  // b.any
    8c138:	910203f5 	add	x21, sp, #0x80
-   8c13c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c13c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c140:	aa1503e0 	mov	x0, x21
-   8c144:	91238021 	add	x1, x1, #0x8e0
+   8c144:	9123c021 	add	x1, x1, #0x8f0
    8c148:	a9046bf9 	stp	x25, x26, [sp, #64]
    8c14c:	9400100d 	bl	90180 <strcpy>
    8c150:	39400300 	ldrb	w0, [x24]
@@ -13117,8 +13141,8 @@ lower_el_aarch32_serror:
    8c16c:	51010421 	sub	w1, w1, #0x41
    8c170:	7100d03f 	cmp	w1, #0x34
    8c174:	54000748 	b.hi	8c25c <__loadlocale+0x20c>  // b.pmore
-   8c178:	b0000040 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8c17c:	91278000 	add	x0, x0, #0x9e0
+   8c178:	b0000040 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8c17c:	9127c000 	add	x0, x0, #0x9f0
    8c180:	a90573fb 	stp	x27, x28, [sp, #80]
    8c184:	78615800 	ldrh	w0, [x0, w1, uxtw #1]
    8c188:	10000061 	adr	x1, 8c194 <__loadlocale+0x144>
@@ -13131,8 +13155,8 @@ lower_el_aarch32_serror:
    8c1a4:	540003e1 	b.ne	8c220 <__loadlocale+0x1d0>  // b.any
    8c1a8:	d2800042 	mov	x2, #0x2                   	// #2
    8c1ac:	aa1503e0 	mov	x0, x21
-   8c1b0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c1b4:	9125c021 	add	x1, x1, #0x970
+   8c1b0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c1b4:	91260021 	add	x1, x1, #0x980
    8c1b8:	94000f36 	bl	8fe90 <strncpy>
    8c1bc:	9101e3e1 	add	x1, sp, #0x78
    8c1c0:	91020be0 	add	x0, sp, #0x82
@@ -13164,9 +13188,9 @@ lower_el_aarch32_serror:
    8c228:	d2800014 	mov	x20, #0x0                   	// #0
    8c22c:	17ffff97 	b	8c088 <__loadlocale+0x38>
    8c230:	910203f5 	add	x21, sp, #0x80
-   8c234:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c234:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c238:	aa1503e0 	mov	x0, x21
-   8c23c:	91236021 	add	x1, x1, #0x8d8
+   8c23c:	9123a021 	add	x1, x1, #0x8e8
    8c240:	a9046bf9 	stp	x25, x26, [sp, #64]
    8c244:	94000fcf 	bl	90180 <strcpy>
    8c248:	17ffffc5 	b	8c15c <__loadlocale+0x10c>
@@ -13210,15 +13234,15 @@ lower_el_aarch32_serror:
    8c2e0:	39400f00 	ldrb	w0, [x24, #3]
    8c2e4:	91000f18 	add	x24, x24, #0x3
    8c2e8:	17ffff8f 	b	8c124 <__loadlocale+0xd4>
-   8c2ec:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x70>
-   8c2f0:	9124637b 	add	x27, x27, #0x918
+   8c2ec:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x60>
+   8c2f0:	9124a37b 	add	x27, x27, #0x928
    8c2f4:	aa1b03e1 	mov	x1, x27
    8c2f8:	aa1503e0 	mov	x0, x21
    8c2fc:	94001b11 	bl	92f40 <strcasecmp>
    8c300:	340000c0 	cbz	w0, 8c318 <__loadlocale+0x2c8>
-   8c304:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c304:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c308:	aa1503e0 	mov	x0, x21
-   8c30c:	91248021 	add	x1, x1, #0x920
+   8c30c:	9124c021 	add	x1, x1, #0x930
    8c310:	94001b0c 	bl	92f40 <strcasecmp>
    8c314:	35fff860 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c318:	aa1b03e1 	mov	x1, x27
@@ -13248,14 +13272,14 @@ lower_el_aarch32_serror:
    8c378:	a94573fb 	ldp	x27, x28, [sp, #80]
    8c37c:	a8ca7bfd 	ldp	x29, x30, [sp], #160
    8c380:	d65f03c0 	ret
-   8c384:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c384:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c388:	aa1503e0 	mov	x0, x21
-   8c38c:	9126e021 	add	x1, x1, #0x9b8
+   8c38c:	91272021 	add	x1, x1, #0x9c8
    8c390:	94001aec 	bl	92f40 <strcasecmp>
    8c394:	35fff460 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
-   8c398:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c398:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c39c:	aa1503e0 	mov	x0, x21
-   8c3a0:	91270021 	add	x1, x1, #0x9c0
+   8c3a0:	91274021 	add	x1, x1, #0x9d0
    8c3a4:	94000f77 	bl	90180 <strcpy>
    8c3a8:	d000003b 	adrp	x27, 92000 <_svfiprintf_r+0x1300>
    8c3ac:	90000022 	adrp	x2, 90000 <_lseek_r+0x40>
@@ -13263,9 +13287,9 @@ lower_el_aarch32_serror:
    8c3b4:	911e0042 	add	x2, x2, #0x780
    8c3b8:	5280003c 	mov	w28, #0x1                   	// #1
    8c3bc:	17ffffdf 	b	8c338 <__loadlocale+0x2e8>
-   8c3c0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c3c0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c3c4:	aa1503e0 	mov	x0, x21
-   8c3c8:	9125e021 	add	x1, x1, #0x978
+   8c3c8:	91262021 	add	x1, x1, #0x988
    8c3cc:	d2800082 	mov	x2, #0x4                   	// #4
    8c3d0:	94000e48 	bl	8fcf0 <strncasecmp>
    8c3d4:	35fff260 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
@@ -13282,12 +13306,12 @@ lower_el_aarch32_serror:
    8c400:	7101501f 	cmp	w0, #0x54
    8c404:	54fff0e1 	b.ne	8c220 <__loadlocale+0x1d0>  // b.any
    8c408:	aa1503e0 	mov	x0, x21
-   8c40c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c410:	91264021 	add	x1, x1, #0x990
+   8c40c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c410:	91268021 	add	x1, x1, #0x9a0
    8c414:	94000f5b 	bl	90180 <strcpy>
    8c418:	17ffffe4 	b	8c3a8 <__loadlocale+0x358>
-   8c41c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x70>
-   8c420:	9124a37b 	add	x27, x27, #0x928
+   8c41c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x60>
+   8c420:	9124e37b 	add	x27, x27, #0x938
    8c424:	aa1b03e1 	mov	x1, x27
    8c428:	aa1503e0 	mov	x0, x21
    8c42c:	94001ac5 	bl	92f40 <strcasecmp>
@@ -13301,16 +13325,16 @@ lower_el_aarch32_serror:
    8c44c:	9127c042 	add	x2, x2, #0x9f0
    8c450:	5280011c 	mov	w28, #0x8                   	// #8
    8c454:	17ffffb9 	b	8c338 <__loadlocale+0x2e8>
-   8c458:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c458:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c45c:	aa1503e0 	mov	x0, x21
-   8c460:	91254021 	add	x1, x1, #0x950
+   8c460:	91258021 	add	x1, x1, #0x960
    8c464:	d2800062 	mov	x2, #0x3                   	// #3
    8c468:	94000e22 	bl	8fcf0 <strncasecmp>
    8c46c:	35ffeda0 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c470:	39420fe0 	ldrb	w0, [sp, #131]
-   8c474:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c474:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c478:	d2800082 	mov	x2, #0x4                   	// #4
-   8c47c:	91256021 	add	x1, x1, #0x958
+   8c47c:	9125a021 	add	x1, x1, #0x968
    8c480:	7100b41f 	cmp	w0, #0x2d
    8c484:	910283e0 	add	x0, sp, #0xa0
    8c488:	9a80141b 	cinc	x27, x0, eq	// eq = none
@@ -13334,8 +13358,8 @@ lower_el_aarch32_serror:
    8c4d0:	39400000 	ldrb	w0, [x0]
    8c4d4:	35ffea60 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c4d8:	aa1503e0 	mov	x0, x21
-   8c4dc:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c4e0:	91258021 	add	x1, x1, #0x960
+   8c4dc:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c4e0:	9125c021 	add	x1, x1, #0x970
    8c4e4:	94000f27 	bl	90180 <strcpy>
    8c4e8:	910227e2 	add	x2, sp, #0x89
    8c4ec:	f1002b7f 	cmp	x27, #0xa
@@ -13354,15 +13378,15 @@ lower_el_aarch32_serror:
    8c520:	1100c000 	add	w0, w0, #0x30
    8c524:	39000040 	strb	w0, [x2]
    8c528:	17ffffa0 	b	8c3a8 <__loadlocale+0x358>
-   8c52c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c52c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c530:	aa1503e0 	mov	x0, x21
-   8c534:	91272021 	add	x1, x1, #0x9c8
+   8c534:	91276021 	add	x1, x1, #0x9d8
    8c538:	d2800062 	mov	x2, #0x3                   	// #3
    8c53c:	94000ded 	bl	8fcf0 <strncasecmp>
    8c540:	35ffe700 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c544:	39420fe0 	ldrb	w0, [sp, #131]
-   8c548:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c54c:	91274021 	add	x1, x1, #0x9d0
+   8c548:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c54c:	91278021 	add	x1, x1, #0x9e0
    8c550:	7100b41f 	cmp	w0, #0x2d
    8c554:	910283e0 	add	x0, sp, #0xa0
    8c558:	9a801400 	cinc	x0, x0, eq	// eq = none
@@ -13370,12 +13394,12 @@ lower_el_aarch32_serror:
    8c560:	94000ec8 	bl	90080 <strcmp>
    8c564:	35ffe5e0 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c568:	aa1503e0 	mov	x0, x21
-   8c56c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c570:	91276021 	add	x1, x1, #0x9d8
+   8c56c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c570:	9127a021 	add	x1, x1, #0x9e8
    8c574:	94000f03 	bl	90180 <strcpy>
    8c578:	17ffff8c 	b	8c3a8 <__loadlocale+0x358>
-   8c57c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x70>
-   8c580:	9125237b 	add	x27, x27, #0x948
+   8c57c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x60>
+   8c580:	9125637b 	add	x27, x27, #0x958
    8c584:	aa1b03e1 	mov	x1, x27
    8c588:	aa1503e0 	mov	x0, x21
    8c58c:	94001a6d 	bl	92f40 <strcasecmp>
@@ -13389,15 +13413,15 @@ lower_el_aarch32_serror:
    8c5ac:	9122c042 	add	x2, x2, #0x8b0
    8c5b0:	5280005c 	mov	w28, #0x2                   	// #2
    8c5b4:	17ffff61 	b	8c338 <__loadlocale+0x2e8>
-   8c5b8:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c5b8:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c5bc:	aa1503e0 	mov	x0, x21
-   8c5c0:	91266021 	add	x1, x1, #0x998
+   8c5c0:	9126a021 	add	x1, x1, #0x9a8
    8c5c4:	d2800102 	mov	x2, #0x8                   	// #8
    8c5c8:	94000dca 	bl	8fcf0 <strncasecmp>
    8c5cc:	35ffe2a0 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c5d0:	394223e0 	ldrb	w0, [sp, #136]
-   8c5d4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c5d8:	9126a021 	add	x1, x1, #0x9a8
+   8c5d4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c5d8:	9126e021 	add	x1, x1, #0x9b8
    8c5dc:	7100b41f 	cmp	w0, #0x2d
    8c5e0:	910283e0 	add	x0, sp, #0xa0
    8c5e4:	9a801400 	cinc	x0, x0, eq	// eq = none
@@ -13405,19 +13429,19 @@ lower_el_aarch32_serror:
    8c5ec:	94001a55 	bl	92f40 <strcasecmp>
    8c5f0:	35ffe180 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c5f4:	aa1503e0 	mov	x0, x21
-   8c5f8:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c5fc:	9126c021 	add	x1, x1, #0x9b0
+   8c5f8:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c5fc:	91270021 	add	x1, x1, #0x9c0
    8c600:	94000ee0 	bl	90180 <strcpy>
    8c604:	17ffff69 	b	8c3a8 <__loadlocale+0x358>
-   8c608:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c608:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c60c:	aa1503e0 	mov	x0, x21
-   8c610:	9124c021 	add	x1, x1, #0x930
+   8c610:	91250021 	add	x1, x1, #0x940
    8c614:	d2800062 	mov	x2, #0x3                   	// #3
    8c618:	94000db6 	bl	8fcf0 <strncasecmp>
    8c61c:	35ffe020 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c620:	39420fe0 	ldrb	w0, [sp, #131]
-   8c624:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c628:	9124e021 	add	x1, x1, #0x938
+   8c624:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c628:	91252021 	add	x1, x1, #0x948
    8c62c:	7100b41f 	cmp	w0, #0x2d
    8c630:	910283e0 	add	x0, sp, #0xa0
    8c634:	9a801400 	cinc	x0, x0, eq	// eq = none
@@ -13425,8 +13449,8 @@ lower_el_aarch32_serror:
    8c63c:	94001a41 	bl	92f40 <strcasecmp>
    8c640:	35ffdf00 	cbnz	w0, 8c220 <__loadlocale+0x1d0>
    8c644:	aa1503e0 	mov	x0, x21
-   8c648:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c64c:	91250021 	add	x1, x1, #0x940
+   8c648:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c64c:	91254021 	add	x1, x1, #0x950
    8c650:	94000ecc 	bl	90180 <strcpy>
    8c654:	d000003b 	adrp	x27, 92000 <_svfiprintf_r+0x1300>
    8c658:	90000022 	adrp	x2, 90000 <_lseek_r+0x40>
@@ -13434,8 +13458,8 @@ lower_el_aarch32_serror:
    8c660:	91250042 	add	x2, x2, #0x940
    8c664:	5280007c 	mov	w28, #0x3                   	// #3
    8c668:	17ffff34 	b	8c338 <__loadlocale+0x2e8>
-   8c66c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x70>
-   8c670:	9123637b 	add	x27, x27, #0x8d8
+   8c66c:	b000005b 	adrp	x27, 95000 <pmu_event_descr+0x60>
+   8c670:	9123a37b 	add	x27, x27, #0x8e8
    8c674:	aa1b03e1 	mov	x1, x27
    8c678:	aa1503e0 	mov	x0, x21
    8c67c:	94001a31 	bl	92f40 <strcasecmp>
@@ -13473,9 +13497,9 @@ lower_el_aarch32_serror:
    8c6fc:	a90573fb 	stp	x27, x28, [sp, #80]
    8c700:	9100071b 	add	x27, x24, #0x1
    8c704:	aa1b03e0 	mov	x0, x27
-   8c708:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c708:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c70c:	52800018 	mov	w24, #0x0                   	// #0
-   8c710:	9123c021 	add	x1, x1, #0x8f0
+   8c710:	91240021 	add	x1, x1, #0x900
    8c714:	5280003a 	mov	w26, #0x1                   	// #1
    8c718:	94000e5a 	bl	90080 <strcmp>
    8c71c:	2a0003f9 	mov	w25, w0
@@ -13483,16 +13507,16 @@ lower_el_aarch32_serror:
    8c724:	a94573fb 	ldp	x27, x28, [sp, #80]
    8c728:	17fffe90 	b	8c168 <__loadlocale+0x118>
    8c72c:	aa1b03e0 	mov	x0, x27
-   8c730:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c730:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c734:	5280001a 	mov	w26, #0x0                   	// #0
-   8c738:	91240021 	add	x1, x1, #0x900
+   8c738:	91244021 	add	x1, x1, #0x910
    8c73c:	52800039 	mov	w25, #0x1                   	// #1
    8c740:	94000e50 	bl	90080 <strcmp>
    8c744:	2a0003f8 	mov	w24, w0
    8c748:	34fffee0 	cbz	w0, 8c724 <__loadlocale+0x6d4>
    8c74c:	aa1b03e0 	mov	x0, x27
-   8c750:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c754:	91244021 	add	x1, x1, #0x910
+   8c750:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c754:	91248021 	add	x1, x1, #0x920
    8c758:	94000e4a 	bl	90080 <strcmp>
    8c75c:	7100001f 	cmp	w0, #0x0
    8c760:	52800019 	mov	w25, #0x0                   	// #0
@@ -13515,13 +13539,13 @@ lower_el_aarch32_serror:
    8c7a4:	54ffd3e8 	b.hi	8c220 <__loadlocale+0x1d0>  // b.pmore
    8c7a8:	17ffff00 	b	8c3a8 <__loadlocale+0x358>
    8c7ac:	aa1503e0 	mov	x0, x21
-   8c7b0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c7b4:	91260021 	add	x1, x1, #0x980
+   8c7b0:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c7b4:	91264021 	add	x1, x1, #0x990
    8c7b8:	94000e72 	bl	90180 <strcpy>
    8c7bc:	17fffefb 	b	8c3a8 <__loadlocale+0x358>
    8c7c0:	aa1503e0 	mov	x0, x21
-   8c7c4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c7c8:	91262021 	add	x1, x1, #0x988
+   8c7c4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c7c8:	91266021 	add	x1, x1, #0x998
    8c7cc:	94000e6d 	bl	90180 <strcpy>
    8c7d0:	17fffef6 	b	8c3a8 <__loadlocale+0x358>
 	...
@@ -13532,29 +13556,29 @@ lower_el_aarch32_serror:
    8c7e8:	a90153f3 	stp	x19, x20, [sp, #16]
    8c7ec:	2a0103f4 	mov	w20, w1
    8c7f0:	aa0003f3 	mov	x19, x0
-   8c7f4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c7f8:	91294021 	add	x1, x1, #0xa50
+   8c7f4:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c7f8:	91298021 	add	x1, x1, #0xa60
    8c7fc:	94000d9d 	bl	8fe70 <_getenv_r>
    8c800:	b4000060 	cbz	x0, 8c80c <__get_locale_env+0x2c>
    8c804:	39400001 	ldrb	w1, [x0]
    8c808:	35000241 	cbnz	w1, 8c850 <__get_locale_env+0x70>
-   8c80c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8c810:	9131c021 	add	x1, x1, #0xc70
+   8c80c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8c810:	91320021 	add	x1, x1, #0xc80
    8c814:	aa1303e0 	mov	x0, x19
    8c818:	f874d821 	ldr	x1, [x1, w20, sxtw #3]
    8c81c:	94000d95 	bl	8fe70 <_getenv_r>
    8c820:	b4000060 	cbz	x0, 8c82c <__get_locale_env+0x4c>
    8c824:	39400001 	ldrb	w1, [x0]
    8c828:	35000141 	cbnz	w1, 8c850 <__get_locale_env+0x70>
-   8c82c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8c82c:	b0000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8c830:	aa1303e0 	mov	x0, x19
-   8c834:	91296021 	add	x1, x1, #0xa58
+   8c834:	9129a021 	add	x1, x1, #0xa68
    8c838:	94000d8e 	bl	8fe70 <_getenv_r>
    8c83c:	b4000060 	cbz	x0, 8c848 <__get_locale_env+0x68>
    8c840:	39400001 	ldrb	w1, [x0]
    8c844:	35000061 	cbnz	w1, 8c850 <__get_locale_env+0x70>
-   8c848:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8c84c:	9138c000 	add	x0, x0, #0xe30
+   8c848:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8c84c:	91390000 	add	x0, x0, #0xe40
    8c850:	a94153f3 	ldp	x19, x20, [sp, #16]
    8c854:	a8c27bfd 	ldp	x29, x30, [sp], #32
    8c858:	d65f03c0 	ret
@@ -13575,9 +13599,9 @@ lower_el_aarch32_serror:
    8c88c:	2a0103fb 	mov	w27, w1
    8c890:	b4001142 	cbz	x2, 8cab8 <_setlocale_r+0x258>
    8c894:	f00013b7 	adrp	x23, 303000 <saved_categories.0+0xa0>
-   8c898:	d0000055 	adrp	x21, 96000 <JIS_state_table+0x80>
+   8c898:	d0000055 	adrp	x21, 96000 <JIS_state_table+0x70>
    8c89c:	910182f7 	add	x23, x23, #0x60
-   8c8a0:	913282b5 	add	x21, x21, #0xca0
+   8c8a0:	9132c2b5 	add	x21, x21, #0xcb0
    8c8a4:	f00013b6 	adrp	x22, 303000 <saved_categories.0+0xa0>
    8c8a8:	910102d6 	add	x22, x22, #0x40
    8c8ac:	aa1703f3 	mov	x19, x23
@@ -13612,10 +13636,10 @@ lower_el_aarch32_serror:
    8c920:	54fffe41 	b.ne	8c8e8 <_setlocale_r+0x88>  // b.any
    8c924:	d00013ba 	adrp	x26, 302000 <irq_handlers+0x1370>
    8c928:	913e035a 	add	x26, x26, #0xf80
-   8c92c:	d0000059 	adrp	x25, 96000 <JIS_state_table+0x80>
+   8c92c:	d0000059 	adrp	x25, 96000 <JIS_state_table+0x70>
    8c930:	aa1a03f6 	mov	x22, x26
    8c934:	aa1703f4 	mov	x20, x23
-   8c938:	91320339 	add	x25, x25, #0xc80
+   8c938:	91324339 	add	x25, x25, #0xc90
    8c93c:	52800033 	mov	w19, #0x1                   	// #1
    8c940:	aa1503e1 	mov	x1, x21
    8c944:	aa1603e0 	mov	x0, x22
@@ -13650,8 +13674,8 @@ lower_el_aarch32_serror:
    8c9b8:	94000df2 	bl	90180 <strcpy>
    8c9bc:	2a1b03e1 	mov	w1, w27
    8c9c0:	aa1603e2 	mov	x2, x22
-   8c9c4:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8c9c8:	91320000 	add	x0, x0, #0xc80
+   8c9c4:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8c9c8:	91324000 	add	x0, x0, #0xc90
    8c9cc:	97fffda1 	bl	8c050 <__loadlocale>
    8c9d0:	aa0003f3 	mov	x19, x0
    8c9d4:	97fffd6b 	bl	8bf80 <currentlocale>
@@ -13712,12 +13736,12 @@ lower_el_aarch32_serror:
    8cab0:	aa0303f3 	mov	x19, x3
    8cab4:	17ffffe4 	b	8ca44 <_setlocale_r+0x1e4>
    8cab8:	937b7c20 	sbfiz	x0, x1, #5, #32
-   8cabc:	d0000041 	adrp	x1, 96000 <JIS_state_table+0x80>
-   8cac0:	91320021 	add	x1, x1, #0xc80
+   8cabc:	d0000041 	adrp	x1, 96000 <JIS_state_table+0x70>
+   8cac0:	91324021 	add	x1, x1, #0xc90
    8cac4:	7100037f 	cmp	w27, #0x0
    8cac8:	8b010000 	add	x0, x0, x1
-   8cacc:	d0000053 	adrp	x19, 96000 <JIS_state_table+0x80>
-   8cad0:	912e4273 	add	x19, x19, #0xb90
+   8cacc:	d0000053 	adrp	x19, 96000 <JIS_state_table+0x70>
+   8cad0:	912e8273 	add	x19, x19, #0xba0
    8cad4:	9a800273 	csel	x19, x19, x0, eq	// eq = none
    8cad8:	a9425bf5 	ldp	x21, x22, [sp, #32]
    8cadc:	aa1303e0 	mov	x0, x19
@@ -13740,9 +13764,9 @@ lower_el_aarch32_serror:
    8cb20:	aa1603e0 	mov	x0, x22
    8cb24:	94000d97 	bl	90180 <strcpy>
    8cb28:	17ffffa5 	b	8c9bc <_setlocale_r+0x15c>
-   8cb2c:	b0000040 	adrp	x0, 95000 <pmu_event_descr+0x70>
+   8cb2c:	b0000040 	adrp	x0, 95000 <pmu_event_descr+0x60>
    8cb30:	b9400315 	ldr	w21, [x24]
-   8cb34:	91234016 	add	x22, x0, #0x8d0
+   8cb34:	91238016 	add	x22, x0, #0x8e0
    8cb38:	52800034 	mov	w20, #0x1                   	// #1
    8cb3c:	6b14027f 	cmp	w19, w20
    8cb40:	540000e1 	b.ne	8cb5c <_setlocale_r+0x2fc>  // b.any
@@ -13799,16 +13823,16 @@ lower_el_aarch32_serror:
    8cc0c:	00000000 	udf	#0
 
 000000000008cc10 <__locale_mb_cur_max>:
-   8cc10:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8cc14:	39778000 	ldrb	w0, [x0, #3552]
+   8cc10:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8cc14:	3977c000 	ldrb	w0, [x0, #3568]
    8cc18:	d65f03c0 	ret
    8cc1c:	00000000 	udf	#0
 
 000000000008cc20 <setlocale>:
-   8cc20:	d0000043 	adrp	x3, 96000 <JIS_state_table+0x80>
+   8cc20:	d0000043 	adrp	x3, 96000 <JIS_state_table+0x70>
    8cc24:	aa0103e2 	mov	x2, x1
    8cc28:	2a0003e1 	mov	w1, w0
-   8cc2c:	f940f860 	ldr	x0, [x3, #496]
+   8cc2c:	f9410060 	ldr	x0, [x3, #512]
    8cc30:	17ffff0c 	b	8c860 <_setlocale_r>
 	...
 
@@ -13818,14 +13842,14 @@ lower_el_aarch32_serror:
 	...
 
 000000000008cc50 <_localeconv_r>:
-   8cc50:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8cc54:	91360000 	add	x0, x0, #0xd80
+   8cc50:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8cc54:	91364000 	add	x0, x0, #0xd90
    8cc58:	d65f03c0 	ret
    8cc5c:	00000000 	udf	#0
 
 000000000008cc60 <localeconv>:
-   8cc60:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8cc64:	91360000 	add	x0, x0, #0xd80
+   8cc60:	d0000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8cc64:	91364000 	add	x0, x0, #0xd90
    8cc68:	d65f03c0 	ret
    8cc6c:	00000000 	udf	#0
 
@@ -13912,9 +13936,9 @@ lower_el_aarch32_serror:
    8cdac:	00000000 	udf	#0
 
 000000000008cdb0 <fclose>:
-   8cdb0:	d0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8cdb0:	d0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8cdb4:	aa0003e1 	mov	x1, x0
-   8cdb8:	f940f840 	ldr	x0, [x2, #496]
+   8cdb8:	f9410040 	ldr	x0, [x2, #512]
    8cdbc:	17ffffad 	b	8cc70 <_fclose_r>
 
 000000000008cdc0 <memchr>:
@@ -13976,12 +14000,12 @@ lower_el_aarch32_serror:
 
 000000000008cea0 <__swsetup_r>:
    8cea0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   8cea4:	d0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8cea4:	d0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8cea8:	910003fd 	mov	x29, sp
    8ceac:	a90153f3 	stp	x19, x20, [sp, #16]
    8ceb0:	aa0003f4 	mov	x20, x0
    8ceb4:	aa0103f3 	mov	x19, x1
-   8ceb8:	f940f840 	ldr	x0, [x2, #496]
+   8ceb8:	f9410040 	ldr	x0, [x2, #512]
    8cebc:	b4000060 	cbz	x0, 8cec8 <__swsetup_r+0x28>
    8cec0:	f9402401 	ldr	x1, [x0, #72]
    8cec4:	b4000761 	cbz	x1, 8cfb0 <__swsetup_r+0x110>
@@ -14377,10 +14401,10 @@ lower_el_aarch32_serror:
 
 000000000008d4d0 <putc>:
    8d4d0:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   8d4d4:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8d4d4:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8d4d8:	910003fd 	mov	x29, sp
    8d4dc:	f90013f5 	str	x21, [sp, #32]
-   8d4e0:	f940f855 	ldr	x21, [x2, #496]
+   8d4e0:	f9410055 	ldr	x21, [x2, #512]
    8d4e4:	a90153f3 	stp	x19, x20, [sp, #16]
    8d4e8:	2a0003f4 	mov	w20, w0
    8d4ec:	aa0103f3 	mov	x19, x1
@@ -14577,11 +14601,11 @@ lower_el_aarch32_serror:
    8d7cc:	14001ac5 	b	942e0 <_wcsnrtombs_r>
 
 000000000008d7d0 <wcsrtombs>:
-   8d7d0:	b0000046 	adrp	x6, 96000 <JIS_state_table+0x80>
+   8d7d0:	b0000046 	adrp	x6, 96000 <JIS_state_table+0x70>
    8d7d4:	aa0003e4 	mov	x4, x0
    8d7d8:	aa0103e5 	mov	x5, x1
    8d7dc:	aa0403e1 	mov	x1, x4
-   8d7e0:	f940f8c0 	ldr	x0, [x6, #496]
+   8d7e0:	f94100c0 	ldr	x0, [x6, #512]
    8d7e4:	aa0203e4 	mov	x4, x2
    8d7e8:	aa0503e2 	mov	x2, x5
    8d7ec:	aa0303e5 	mov	x5, x3
@@ -14744,11 +14768,11 @@ lower_el_aarch32_serror:
    8da5c:	52800020 	mov	w0, #0x1                   	// #1
    8da60:	b9000020 	str	w0, [x1]
    8da64:	b4000098 	cbz	x24, 8da74 <_dtoa_r+0xc4>
-   8da68:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8da6c:	91184400 	add	x0, x0, #0x611
+   8da68:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8da6c:	91188400 	add	x0, x0, #0x621
    8da70:	f9000300 	str	x0, [x24]
-   8da74:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x70>
-   8da78:	911842b5 	add	x21, x21, #0x610
+   8da74:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x60>
+   8da78:	911882b5 	add	x21, x21, #0x620
    8da7c:	a94153f3 	ldp	x19, x20, [sp, #16]
    8da80:	aa1503e0 	mov	x0, x21
    8da84:	a9425bf5 	ldp	x21, x22, [sp, #32]
@@ -14789,15 +14813,15 @@ lower_el_aarch32_serror:
    8db10:	b3607c22 	bfi	x2, x1, #32, #32
    8db14:	9e670042 	fmov	d2, x2
    8db18:	1e6f1001 	fmov	d1, #1.500000000000000000e+00
-   8db1c:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8db1c:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8db20:	1e620003 	scvtf	d3, w0
    8db24:	1e613841 	fsub	d1, d2, d1
-   8db28:	fd469c24 	ldr	d4, [x1, #3384]
-   8db2c:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8db30:	fd46a020 	ldr	d0, [x1, #3392]
-   8db34:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x70>
+   8db28:	fd46a424 	ldr	d4, [x1, #3400]
+   8db2c:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8db30:	fd46a820 	ldr	d0, [x1, #3408]
+   8db34:	90000041 	adrp	x1, 95000 <pmu_event_descr+0x60>
    8db38:	1f440020 	fmadd	d0, d1, d4, d0
-   8db3c:	fd46a422 	ldr	d2, [x1, #3400]
+   8db3c:	fd46ac22 	ldr	d2, [x1, #3416]
    8db40:	1f420060 	fmadd	d0, d3, d2, d0
    8db44:	1e602018 	fcmpe	d0, #0.0
    8db48:	1e780005 	fcvtzs	w5, d0
@@ -14806,8 +14830,8 @@ lower_el_aarch32_serror:
    8db54:	51000406 	sub	w6, w0, #0x1
    8db58:	710058bf 	cmp	w5, #0x16
    8db5c:	54001928 	b.hi	8de80 <_dtoa_r+0x4d0>  // b.pmore
-   8db60:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
-   8db64:	91038044 	add	x4, x2, #0xe0
+   8db60:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
+   8db64:	9103c044 	add	x4, x2, #0xf0
    8db68:	fc65d880 	ldr	d0, [x4, w5, sxtw #3]
    8db6c:	1e692010 	fcmpe	d0, d9
    8db70:	54001c8c 	b.gt	8df00 <_dtoa_r+0x550>
@@ -14872,23 +14896,23 @@ lower_el_aarch32_serror:
    8dc5c:	7100003f 	cmp	w1, #0x0
    8dc60:	5400194d 	b.le	8df88 <_dtoa_r+0x5d8>
    8dc64:	2a0103e0 	mov	w0, w1
-   8dc68:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8dc68:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8dc6c:	aa0003e1 	mov	x1, x0
-   8dc70:	91038044 	add	x4, x2, #0xe0
+   8dc70:	9103c044 	add	x4, x2, #0xf0
    8dc74:	92400c21 	and	x1, x1, #0xf
    8dc78:	2a0003e2 	mov	w2, w0
    8dc7c:	13047c00 	asr	w0, w0, #4
    8dc80:	fc617880 	ldr	d0, [x4, x1, lsl #3]
    8dc84:	aa0203e1 	mov	x1, x2
    8dc88:	36404701 	tbz	w1, #8, 8e568 <_dtoa_r+0xbb8>
-   8dc8c:	b0000041 	adrp	x1, 96000 <JIS_state_table+0x80>
+   8dc8c:	b0000041 	adrp	x1, 96000 <JIS_state_table+0x70>
    8dc90:	12000c00 	and	w0, w0, #0xf
    8dc94:	52800062 	mov	w2, #0x3                   	// #3
-   8dc98:	fd406821 	ldr	d1, [x1, #208]
+   8dc98:	fd407021 	ldr	d1, [x1, #224]
    8dc9c:	1e611921 	fdiv	d1, d9, d1
    8dca0:	34000160 	cbz	w0, 8dccc <_dtoa_r+0x31c>
-   8dca4:	b0000041 	adrp	x1, 96000 <JIS_state_table+0x80>
-   8dca8:	9102c021 	add	x1, x1, #0xb0
+   8dca4:	b0000041 	adrp	x1, 96000 <JIS_state_table+0x70>
+   8dca8:	91030021 	add	x1, x1, #0xc0
    8dcac:	d503201f 	nop
    8dcb0:	36000080 	tbz	w0, #0, 8dcc0 <_dtoa_r+0x310>
    8dcb4:	fd400022 	ldr	d2, [x1]
@@ -14916,9 +14940,9 @@ lower_el_aarch32_serror:
    8dd0c:	2a1603e8 	mov	w8, w22
    8dd10:	1e780021 	fcvtzs	w1, d1
    8dd14:	9e670002 	fmov	d2, x0
-   8dd18:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8dd18:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8dd1c:	51000509 	sub	w9, w8, #0x1
-   8dd20:	91038044 	add	x4, x2, #0xe0
+   8dd20:	9103c044 	add	x4, x2, #0xf0
    8dd24:	910006e2 	add	x2, x23, #0x1
    8dd28:	1e620020 	scvtf	d0, w1
    8dd2c:	1100c020 	add	w0, w1, #0x30
@@ -14957,9 +14981,9 @@ lower_el_aarch32_serror:
    8ddb0:	9e66013a 	fmov	x26, d9
    8ddb4:	d503201f 	nop
    8ddb8:	b940bfe0 	ldr	w0, [sp, #188]
-   8ddbc:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8ddbc:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8ddc0:	b94083e1 	ldr	w1, [sp, #128]
-   8ddc4:	91038044 	add	x4, x2, #0xe0
+   8ddc4:	9103c044 	add	x4, x2, #0xf0
    8ddc8:	7100001f 	cmp	w0, #0x0
    8ddcc:	7a4ea820 	ccmp	w1, #0xe, #0x0, ge	// ge = tcont
    8ddd0:	54002c2d 	b.le	8e354 <_dtoa_r+0x9a4>
@@ -14984,11 +15008,11 @@ lower_el_aarch32_serror:
    8de1c:	9e660120 	fmov	x0, d9
    8de20:	f240cc1f 	tst	x0, #0xfffffffffffff
    8de24:	54000201 	b.ne	8de64 <_dtoa_r+0x4b4>  // b.any
-   8de28:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x70>
+   8de28:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x60>
    8de2c:	b40050d8 	cbz	x24, 8e844 <_dtoa_r+0xe94>
-   8de30:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8de34:	9132a2b5 	add	x21, x21, #0xca8
-   8de38:	9132c000 	add	x0, x0, #0xcb0
+   8de30:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8de34:	9132e2b5 	add	x21, x21, #0xcb8
+   8de38:	91330000 	add	x0, x0, #0xcc0
    8de3c:	f9000300 	str	x0, [x24]
    8de40:	17ffff0f 	b	8da7c <_dtoa_r+0xcc>
    8de44:	9e660122 	fmov	x2, d9
@@ -14999,11 +15023,11 @@ lower_el_aarch32_serror:
    8de58:	320c2421 	orr	w1, w1, #0x3ff00000
    8de5c:	b3607c22 	bfi	x2, x1, #32, #32
    8de60:	17ffff2d 	b	8db14 <_dtoa_r+0x164>
-   8de64:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x70>
+   8de64:	90000055 	adrp	x21, 95000 <pmu_event_descr+0x60>
    8de68:	b4004f38 	cbz	x24, 8e84c <_dtoa_r+0xe9c>
-   8de6c:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8de70:	9132e2b5 	add	x21, x21, #0xcb8
-   8de74:	9132ec00 	add	x0, x0, #0xcbb
+   8de6c:	90000040 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8de70:	913322b5 	add	x21, x21, #0xcc8
+   8de74:	91332c00 	add	x0, x0, #0xccb
    8de78:	f9000300 	str	x0, [x24]
    8de7c:	17ffff00 	b	8da7c <_dtoa_r+0xcc>
    8de80:	52800021 	mov	w1, #0x1                   	// #1
@@ -15074,8 +15098,8 @@ lower_el_aarch32_serror:
    8df84:	17ffff8d 	b	8ddb8 <_dtoa_r+0x408>
    8df88:	54003480 	b.eq	8e618 <_dtoa_r+0xc68>  // b.none
    8df8c:	b94083e1 	ldr	w1, [sp, #128]
-   8df90:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x80>
-   8df94:	91038044 	add	x4, x2, #0xe0
+   8df90:	b0000042 	adrp	x2, 96000 <JIS_state_table+0x70>
+   8df94:	9103c044 	add	x4, x2, #0xf0
    8df98:	4b0103e1 	neg	w1, w1
    8df9c:	92400c28 	and	x8, x1, #0xf
    8dfa0:	13047c21 	asr	w1, w1, #4
@@ -15083,8 +15107,8 @@ lower_el_aarch32_serror:
    8dfa8:	1e620922 	fmul	d2, d9, d2
    8dfac:	34005661 	cbz	w1, 8ea78 <_dtoa_r+0x10c8>
    8dfb0:	1e604041 	fmov	d1, d2
-   8dfb4:	b0000044 	adrp	x4, 96000 <JIS_state_table+0x80>
-   8dfb8:	9102c084 	add	x4, x4, #0xb0
+   8dfb4:	b0000044 	adrp	x4, 96000 <JIS_state_table+0x70>
+   8dfb8:	91030084 	add	x4, x4, #0xc0
    8dfbc:	52800008 	mov	w8, #0x0                   	// #0
    8dfc0:	52800042 	mov	w2, #0x2                   	// #2
    8dfc4:	d503201f 	nop
@@ -15631,9 +15655,9 @@ lower_el_aarch32_serror:
    8e838:	b9008fe7 	str	w7, [sp, #140]
    8e83c:	0b0000e7 	add	w7, w7, w0
    8e840:	17ffff83 	b	8e64c <_dtoa_r+0xc9c>
-   8e844:	9132a2b5 	add	x21, x21, #0xca8
+   8e844:	9132e2b5 	add	x21, x21, #0xcb8
    8e848:	17fffc8d 	b	8da7c <_dtoa_r+0xcc>
-   8e84c:	9132e2b5 	add	x21, x21, #0xcb8
+   8e84c:	913322b5 	add	x21, x21, #0xcc8
    8e850:	17fffc8b 	b	8da7c <_dtoa_r+0xcc>
    8e854:	aa1403e1 	mov	x1, x20
    8e858:	2a1c03e2 	mov	w2, w28
@@ -15781,10 +15805,10 @@ lower_el_aarch32_serror:
    8ea90:	b940abf6 	ldr	w22, [sp, #168]
    8ea94:	35ffba36 	cbnz	w22, 8e1d8 <_dtoa_r+0x828>
    8ea98:	17fffec7 	b	8e5b4 <_dtoa_r+0xc04>
-   8ea9c:	f0000023 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   8eaa0:	f0000020 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8eaa4:	91330063 	add	x3, x3, #0xcc0
-   8eaa8:	91336000 	add	x0, x0, #0xcd8
+   8ea9c:	f0000023 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   8eaa0:	f0000020 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8eaa4:	91334063 	add	x3, x3, #0xcd0
+   8eaa8:	9133a000 	add	x0, x0, #0xce8
    8eaac:	d2800002 	mov	x2, #0x0                   	// #0
    8eab0:	52805de1 	mov	w1, #0x2ef                 	// #751
    8eab4:	94001103 	bl	92ec0 <__assert_func>
@@ -15809,18 +15833,18 @@ lower_el_aarch32_serror:
    8eb00:	b9008bf9 	str	w25, [sp, #136]
    8eb04:	b900abe0 	str	w0, [sp, #168]
    8eb08:	17fffcac 	b	8ddb8 <_dtoa_r+0x408>
-   8eb0c:	f0000023 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   8eb10:	f0000020 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   8eb14:	91330063 	add	x3, x3, #0xcc0
-   8eb18:	91336000 	add	x0, x0, #0xcd8
+   8eb0c:	f0000023 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   8eb10:	f0000020 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   8eb14:	91334063 	add	x3, x3, #0xcd0
+   8eb18:	9133a000 	add	x0, x0, #0xce8
    8eb1c:	d2800002 	mov	x2, #0x0                   	// #0
    8eb20:	528035e1 	mov	w1, #0x1af                 	// #431
    8eb24:	940010e7 	bl	92ec0 <__assert_func>
 	...
 
 000000000008eb30 <__set_ctype>:
-   8eb30:	f0000021 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   8eb34:	91354021 	add	x1, x1, #0xd50
+   8eb30:	f0000021 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   8eb34:	91358021 	add	x1, x1, #0xd60
    8eb38:	f9007c01 	str	x1, [x0, #248]
    8eb3c:	d65f03c0 	ret
 
@@ -15832,7 +15856,7 @@ lower_el_aarch32_serror:
    8eb50:	aa0003f3 	mov	x19, x0
    8eb54:	b9012a9f 	str	wzr, [x20, #296]
    8eb58:	2a0103e0 	mov	w0, w1
-   8eb5c:	97ffc8ad 	bl	80e10 <_close>
+   8eb5c:	97ffc8bd 	bl	80e50 <_close>
    8eb60:	3100041f 	cmn	w0, #0x1
    8eb64:	54000080 	b.eq	8eb74 <_close_r+0x34>  // b.none
    8eb68:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -15848,11 +15872,11 @@ lower_el_aarch32_serror:
 
 000000000008eb90 <_reclaim_reent>:
    8eb90:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   8eb94:	90000041 	adrp	x1, 96000 <JIS_state_table+0x80>
+   8eb94:	90000041 	adrp	x1, 96000 <JIS_state_table+0x70>
    8eb98:	910003fd 	mov	x29, sp
    8eb9c:	a90153f3 	stp	x19, x20, [sp, #16]
    8eba0:	aa0003f4 	mov	x20, x0
-   8eba4:	f940f820 	ldr	x0, [x1, #496]
+   8eba4:	f9410020 	ldr	x0, [x1, #512]
    8eba8:	eb14001f 	cmp	x0, x20
    8ebac:	54000440 	b.eq	8ec34 <_reclaim_reent+0xa4>  // b.none
    8ebb0:	f9403681 	ldr	x1, [x20, #104]
@@ -16080,9 +16104,9 @@ lower_el_aarch32_serror:
    8ef18:	910003fd 	mov	x29, sp
    8ef1c:	a90153f3 	stp	x19, x20, [sp, #16]
    8ef20:	aa0003f3 	mov	x19, x0
-   8ef24:	90000040 	adrp	x0, 96000 <JIS_state_table+0x80>
+   8ef24:	90000040 	adrp	x0, 96000 <JIS_state_table+0x70>
    8ef28:	f90013f5 	str	x21, [sp, #32]
-   8ef2c:	f940f815 	ldr	x21, [x0, #496]
+   8ef2c:	f9410015 	ldr	x21, [x0, #512]
    8ef30:	b4000075 	cbz	x21, 8ef3c <fflush+0x2c>
    8ef34:	f94026a0 	ldr	x0, [x21, #72]
    8ef38:	b4000280 	cbz	x0, 8ef88 <fflush+0x78>
@@ -16114,12 +16138,12 @@ lower_el_aarch32_serror:
    8efa0:	f9405260 	ldr	x0, [x19, #160]
    8efa4:	97fff3f3 	bl	8bf70 <__retarget_lock_release_recursive>
    8efa8:	17fffff3 	b	8ef74 <fflush+0x64>
-   8efac:	90000042 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8efac:	90000042 	adrp	x2, 96000 <JIS_state_table+0x70>
    8efb0:	90000001 	adrp	x1, 8e000 <_dtoa_r+0x650>
-   8efb4:	90000040 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8efb8:	910d4042 	add	x2, x2, #0x350
+   8efb4:	90000040 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8efb8:	910d8042 	add	x2, x2, #0x360
    8efbc:	91394021 	add	x1, x1, #0xe50
-   8efc0:	9107e000 	add	x0, x0, #0x1f8
+   8efc0:	91082000 	add	x0, x0, #0x208
    8efc4:	17ffd057 	b	83120 <_fwalk_sglue>
 
 000000000008efc8 <strchr>:
@@ -16239,9 +16263,9 @@ lower_el_aarch32_serror:
    8f188:	54000943 	b.cc	8f2b0 <_realloc_r+0x180>  // b.lo, b.ul, b.last
    8f18c:	eb1402ff 	cmp	x23, x20
    8f190:	54000a4a 	b.ge	8f2d8 <_realloc_r+0x1a8>  // b.tcont
-   8f194:	f0000021 	adrp	x1, 96000 <JIS_state_table+0x80>
+   8f194:	f0000021 	adrp	x1, 96000 <JIS_state_table+0x70>
    8f198:	a90573fb 	stp	x27, x28, [sp, #80]
-   8f19c:	910e003c 	add	x28, x1, #0x380
+   8f19c:	910e403c 	add	x28, x1, #0x390
    8f1a0:	8b170302 	add	x2, x24, x23
    8f1a4:	f9400b83 	ldr	x3, [x28, #16]
    8f1a8:	f9400441 	ldr	x1, [x2, #8]
@@ -16567,8 +16591,8 @@ lower_el_aarch32_serror:
    8f6a0:	a9bc7bfd 	stp	x29, x30, [sp, #-64]!
    8f6a4:	910003fd 	mov	x29, sp
    8f6a8:	a9025bf5 	stp	x21, x22, [sp, #32]
-   8f6ac:	f0000036 	adrp	x22, 96000 <JIS_state_table+0x80>
-   8f6b0:	910e02d6 	add	x22, x22, #0x380
+   8f6ac:	f0000036 	adrp	x22, 96000 <JIS_state_table+0x70>
+   8f6b0:	910e42d6 	add	x22, x22, #0x390
    8f6b4:	aa0003f5 	mov	x21, x0
    8f6b8:	a90153f3 	stp	x19, x20, [sp, #16]
    8f6bc:	f9001bf7 	str	x23, [sp, #48]
@@ -16626,11 +16650,11 @@ lower_el_aarch32_serror:
    8f78c:	cb020001 	sub	x1, x0, x2
    8f790:	f1007c3f 	cmp	x1, #0x1f
    8f794:	54fffbad 	b.le	8f708 <_malloc_trim_r+0x68>
-   8f798:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x80>
+   8f798:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x70>
    8f79c:	b2400021 	orr	x1, x1, #0x1
    8f7a0:	f9000441 	str	x1, [x2, #8]
    8f7a4:	f0001383 	adrp	x3, 302000 <irq_handlers+0x1370>
-   8f7a8:	f941b481 	ldr	x1, [x4, #872]
+   8f7a8:	f941bc81 	ldr	x1, [x4, #888]
    8f7ac:	cb010000 	sub	x0, x0, x1
    8f7b0:	b90ee060 	str	w0, [x3, #3808]
    8f7b4:	17ffffd5 	b	8f708 <_malloc_trim_r+0x68>
@@ -16646,8 +16670,8 @@ lower_el_aarch32_serror:
    8f7d8:	97fff7f2 	bl	8d7a0 <__malloc_lock>
    8f7dc:	f85f8265 	ldur	x5, [x19, #-8]
    8f7e0:	d1004263 	sub	x3, x19, #0x10
-   8f7e4:	f0000020 	adrp	x0, 96000 <JIS_state_table+0x80>
-   8f7e8:	910e0000 	add	x0, x0, #0x380
+   8f7e4:	f0000020 	adrp	x0, 96000 <JIS_state_table+0x70>
+   8f7e8:	910e4000 	add	x0, x0, #0x390
    8f7ec:	927ff8a2 	and	x2, x5, #0xfffffffffffffffe
    8f7f0:	8b020064 	add	x4, x3, x2
    8f7f4:	f9400806 	ldr	x6, [x0, #16]
@@ -16659,11 +16683,11 @@ lower_el_aarch32_serror:
    8f80c:	8b010086 	add	x6, x4, x1
    8f810:	37000345 	tbnz	w5, #0, 8f878 <_free_r+0xb8>
    8f814:	f85f0267 	ldur	x7, [x19, #-16]
-   8f818:	f0000025 	adrp	x5, 96000 <JIS_state_table+0x80>
+   8f818:	f0000025 	adrp	x5, 96000 <JIS_state_table+0x70>
    8f81c:	f94004c6 	ldr	x6, [x6, #8]
    8f820:	cb070063 	sub	x3, x3, x7
    8f824:	8b070042 	add	x2, x2, x7
-   8f828:	910e40a5 	add	x5, x5, #0x390
+   8f828:	910e80a5 	add	x5, x5, #0x3a0
    8f82c:	924000c6 	and	x6, x6, #0x1
    8f830:	f9400867 	ldr	x7, [x3, #16]
    8f834:	eb0500ff 	cmp	x7, x5
@@ -16737,9 +16761,9 @@ lower_el_aarch32_serror:
    8f944:	a94153f3 	ldp	x19, x20, [sp, #16]
    8f948:	a8c27bfd 	ldp	x29, x30, [sp], #32
    8f94c:	17fff799 	b	8d7b0 <__malloc_unlock>
-   8f950:	f0000025 	adrp	x5, 96000 <JIS_state_table+0x80>
+   8f950:	f0000025 	adrp	x5, 96000 <JIS_state_table+0x70>
    8f954:	8b010042 	add	x2, x2, x1
-   8f958:	910e40a5 	add	x5, x5, #0x390
+   8f958:	910e80a5 	add	x5, x5, #0x3a0
    8f95c:	17ffffbd 	b	8f850 <_free_r+0x90>
    8f960:	b5000986 	cbnz	x6, 8fa90 <_free_r+0x2d0>
    8f964:	a9410085 	ldp	x5, x0, [x4, #16]
@@ -16758,10 +16782,10 @@ lower_el_aarch32_serror:
    8f998:	a9410864 	ldp	x4, x2, [x3, #16]
    8f99c:	f9000c82 	str	x2, [x4, #24]
    8f9a0:	f9000844 	str	x4, [x2, #16]
-   8f9a4:	f0000022 	adrp	x2, 96000 <JIS_state_table+0x80>
+   8f9a4:	f0000022 	adrp	x2, 96000 <JIS_state_table+0x70>
    8f9a8:	b2400024 	orr	x4, x1, #0x1
    8f9ac:	f9000464 	str	x4, [x3, #8]
-   8f9b0:	f941b842 	ldr	x2, [x2, #880]
+   8f9b0:	f941c042 	ldr	x2, [x2, #896]
    8f9b4:	f9000803 	str	x3, [x0, #16]
    8f9b8:	eb01005f 	cmp	x2, x1
    8f9bc:	54fffc28 	b.hi	8f940 <_free_r+0x180>  // b.pmore
@@ -16823,10 +16847,10 @@ lower_el_aarch32_serror:
    8fa9c:	17ffffa9 	b	8f940 <_free_r+0x180>
 
 000000000008faa0 <_strtol_l.part.0>:
-   8faa0:	d0000027 	adrp	x7, 95000 <pmu_event_descr+0x70>
+   8faa0:	d0000027 	adrp	x7, 95000 <pmu_event_descr+0x60>
    8faa4:	aa0003ec 	mov	x12, x0
    8faa8:	aa0103e6 	mov	x6, x1
-   8faac:	913544e7 	add	x7, x7, #0xd51
+   8faac:	913584e7 	add	x7, x7, #0xd61
    8fab0:	aa0603e8 	mov	x8, x6
    8fab4:	384014c5 	ldrb	w5, [x6], #1
    8fab8:	386548e4 	ldrb	w4, [x7, w5, uxtw]
@@ -16935,10 +16959,10 @@ lower_el_aarch32_serror:
    8fc4c:	d65f03c0 	ret
 
 000000000008fc50 <strtol_l>:
-   8fc50:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x80>
+   8fc50:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x70>
    8fc54:	7100905f 	cmp	w2, #0x24
    8fc58:	7a419844 	ccmp	w2, #0x1, #0x4, ls	// ls = plast
-   8fc5c:	f940f884 	ldr	x4, [x4, #496]
+   8fc5c:	f9410084 	ldr	x4, [x4, #512]
    8fc60:	540000c0 	b.eq	8fc78 <strtol_l+0x28>  // b.none
    8fc64:	2a0203e3 	mov	w3, w2
    8fc68:	aa0103e2 	mov	x2, x1
@@ -16956,10 +16980,10 @@ lower_el_aarch32_serror:
 	...
 
 000000000008fca0 <strtol>:
-   8fca0:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x80>
+   8fca0:	f0000024 	adrp	x4, 96000 <JIS_state_table+0x70>
    8fca4:	7100905f 	cmp	w2, #0x24
    8fca8:	7a419844 	ccmp	w2, #0x1, #0x4, ls	// ls = plast
-   8fcac:	f940f884 	ldr	x4, [x4, #496]
+   8fcac:	f9410084 	ldr	x4, [x4, #512]
    8fcb0:	540000c0 	b.eq	8fcc8 <strtol+0x28>  // b.none
    8fcb4:	2a0203e3 	mov	w3, w2
    8fcb8:	aa0103e2 	mov	x2, x1
@@ -16979,9 +17003,9 @@ lower_el_aarch32_serror:
 000000000008fcf0 <strncasecmp>:
    8fcf0:	aa0003e9 	mov	x9, x0
    8fcf4:	b4000342 	cbz	x2, 8fd5c <strncasecmp+0x6c>
-   8fcf8:	d0000027 	adrp	x7, 95000 <pmu_event_descr+0x70>
+   8fcf8:	d0000027 	adrp	x7, 95000 <pmu_event_descr+0x60>
    8fcfc:	d2800004 	mov	x4, #0x0                   	// #0
-   8fd00:	913544e7 	add	x7, x7, #0xd51
+   8fd00:	913584e7 	add	x7, x7, #0xd61
    8fd04:	14000006 	b	8fd1c <strncasecmp+0x2c>
    8fd08:	6b000063 	subs	w3, w3, w0
    8fd0c:	540002c1 	b.ne	8fd64 <strncasecmp+0x74>  // b.any
@@ -17014,14 +17038,14 @@ lower_el_aarch32_serror:
    8fd70:	a9bb7bfd 	stp	x29, x30, [sp, #-80]!
    8fd74:	910003fd 	mov	x29, sp
    8fd78:	a90363f7 	stp	x23, x24, [sp, #48]
-   8fd7c:	f0000038 	adrp	x24, 96000 <JIS_state_table+0x80>
+   8fd7c:	f0000038 	adrp	x24, 96000 <JIS_state_table+0x70>
    8fd80:	aa0003f7 	mov	x23, x0
    8fd84:	a90153f3 	stp	x19, x20, [sp, #16]
    8fd88:	a9025bf5 	stp	x21, x22, [sp, #32]
    8fd8c:	aa0103f5 	mov	x21, x1
    8fd90:	aa0203f6 	mov	x22, x2
    8fd94:	9400116b 	bl	94340 <__env_lock>
-   8fd98:	f9472b14 	ldr	x20, [x24, #3664]
+   8fd98:	f9473314 	ldr	x20, [x24, #3680]
    8fd9c:	b40003f4 	cbz	x20, 8fe18 <_findenv_r+0xa8>
    8fda0:	394002a3 	ldrb	w3, [x21]
    8fda4:	aa1503f3 	mov	x19, x21
@@ -17061,7 +17085,7 @@ lower_el_aarch32_serror:
    8fe2c:	a94363f7 	ldp	x23, x24, [sp, #48]
    8fe30:	a8c57bfd 	ldp	x29, x30, [sp], #80
    8fe34:	d65f03c0 	ret
-   8fe38:	f9472b01 	ldr	x1, [x24, #3664]
+   8fe38:	f9473301 	ldr	x1, [x24, #3680]
    8fe3c:	aa1703e0 	mov	x0, x23
    8fe40:	cb010281 	sub	x1, x20, x1
    8fe44:	9343fc21 	asr	x1, x1, #3
@@ -17132,7 +17156,7 @@ lower_el_aarch32_serror:
    8ff34:	b9012a9f 	str	wzr, [x20, #296]
    8ff38:	2a0103e0 	mov	w0, w1
    8ff3c:	aa0203e1 	mov	x1, x2
-   8ff40:	97ffc3b8 	bl	80e20 <_fstat>
+   8ff40:	97ffc3c8 	bl	80e60 <_fstat>
    8ff44:	3100041f 	cmn	w0, #0x1
    8ff48:	54000080 	b.eq	8ff58 <_fstat_r+0x38>  // b.none
    8ff4c:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -17153,7 +17177,7 @@ lower_el_aarch32_serror:
    8ff80:	aa0003f3 	mov	x19, x0
    8ff84:	b9012a9f 	str	wzr, [x20, #296]
    8ff88:	2a0103e0 	mov	w0, w1
-   8ff8c:	97ffc3a9 	bl	80e30 <_isatty>
+   8ff8c:	97ffc3b9 	bl	80e70 <_isatty>
    8ff90:	3100041f 	cmn	w0, #0x1
    8ff94:	54000080 	b.eq	8ffa4 <_isatty_r+0x34>  // b.none
    8ff98:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -17177,7 +17201,7 @@ lower_el_aarch32_serror:
    8ffd8:	2a0103e0 	mov	w0, w1
    8ffdc:	aa0203e1 	mov	x1, x2
    8ffe0:	2a0303e2 	mov	w2, w3
-   8ffe4:	97ffc380 	bl	80de4 <_lseek>
+   8ffe4:	97ffc390 	bl	80e24 <_lseek>
    8ffe8:	b100041f 	cmn	x0, #0x1
    8ffec:	54000080 	b.eq	8fffc <_lseek_r+0x3c>  // b.none
    8fff0:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -17201,7 +17225,7 @@ lower_el_aarch32_serror:
    90038:	aa0203e1 	mov	x1, x2
    9003c:	b9012a9f 	str	wzr, [x20, #296]
    90040:	aa0303e2 	mov	x2, x3
-   90044:	97ffc337 	bl	80d20 <_read>
+   90044:	97ffc347 	bl	80d60 <_read>
    90048:	93407c01 	sxtw	x1, w0
    9004c:	3100041f 	cmn	w0, #0x1
    90050:	540000a0 	b.eq	90064 <_read_r+0x44>  // b.none
@@ -17612,10 +17636,10 @@ lower_el_aarch32_serror:
 
 00000000000906a0 <fputwc>:
    906a0:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   906a4:	d0000022 	adrp	x2, 96000 <JIS_state_table+0x80>
+   906a4:	d0000022 	adrp	x2, 96000 <JIS_state_table+0x70>
    906a8:	910003fd 	mov	x29, sp
    906ac:	f90013f5 	str	x21, [sp, #32]
-   906b0:	f940f855 	ldr	x21, [x2, #496]
+   906b0:	f9410055 	ldr	x21, [x2, #512]
    906b4:	a90153f3 	stp	x19, x20, [sp, #16]
    906b8:	2a0003f4 	mov	w20, w0
    906bc:	aa0103f3 	mov	x19, x1
@@ -17663,8 +17687,8 @@ lower_el_aarch32_serror:
 	...
 
 0000000000090770 <_wctomb_r>:
-   90770:	d0000024 	adrp	x4, 96000 <JIS_state_table+0x80>
-   90774:	f946b084 	ldr	x4, [x4, #3424]
+   90770:	d0000024 	adrp	x4, 96000 <JIS_state_table+0x70>
+   90774:	f946b884 	ldr	x4, [x4, #3440]
    90778:	aa0403f0 	mov	x16, x4
    9077c:	d61f0200 	br	x16
 
@@ -17883,7 +17907,7 @@ lower_el_aarch32_serror:
    90ac0:	aa0003f3 	mov	x19, x0
    90ac4:	b9012a9f 	str	wzr, [x20, #296]
    90ac8:	aa0103e0 	mov	x0, x1
-   90acc:	97ffc0e2 	bl	80e54 <_sbrk>
+   90acc:	97ffc0f2 	bl	80e94 <_sbrk>
    90ad0:	b100041f 	cmn	x0, #0x1
    90ad4:	54000080 	b.eq	90ae4 <_sbrk_r+0x34>  // b.none
    90ad8:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -18050,11 +18074,11 @@ lower_el_aarch32_serror:
    90d50:	b4007be0 	cbz	x0, 91ccc <_svfiprintf_r+0xfcc>
    90d54:	a9046bf9 	stp	x25, x26, [sp, #64]
    90d58:	9105c3f7 	add	x23, sp, #0x170
-   90d5c:	d0000035 	adrp	x21, 96000 <JIS_state_table+0x80>
+   90d5c:	d0000035 	adrp	x21, 96000 <JIS_state_table+0x70>
    90d60:	aa1703fc 	mov	x28, x23
-   90d64:	913202b5 	add	x21, x21, #0xc80
-   90d68:	b0000020 	adrp	x0, 95000 <pmu_event_descr+0x70>
-   90d6c:	91395000 	add	x0, x0, #0xe54
+   90d64:	913242b5 	add	x21, x21, #0xc90
+   90d68:	b0000020 	adrp	x0, 95000 <pmu_event_descr+0x60>
+   90d6c:	91399000 	add	x0, x0, #0xe64
    90d70:	b90063ff 	str	wzr, [sp, #96]
    90d74:	f9003be0 	str	x0, [sp, #112]
    90d78:	f90043ff 	str	xzr, [sp, #128]
@@ -18256,8 +18280,8 @@ lower_el_aarch32_serror:
    91088:	4b04010a 	sub	w10, w8, w4
    9108c:	7100015f 	cmp	w10, #0x0
    91090:	54fff5ad 	b.le	90f44 <_svfiprintf_r+0x244>
-   91094:	9000002b 	adrp	x11, 95000 <pmu_event_descr+0x70>
-   91098:	913c416b 	add	x11, x11, #0xf10
+   91094:	9000002b 	adrp	x11, 95000 <pmu_event_descr+0x60>
+   91098:	913c816b 	add	x11, x11, #0xf20
    9109c:	7100415f 	cmp	w10, #0x10
    910a0:	5400058d 	b.le	91150 <_svfiprintf_r+0x450>
    910a4:	aa1c03e2 	mov	x2, x28
@@ -18329,8 +18353,8 @@ lower_el_aarch32_serror:
    911ac:	b940fbe0 	ldr	w0, [sp, #248]
    911b0:	7100007f 	cmp	w3, #0x0
    911b4:	54ffeced 	b.le	90f50 <_svfiprintf_r+0x250>
-   911b8:	9000002b 	adrp	x11, 95000 <pmu_event_descr+0x70>
-   911bc:	913c416b 	add	x11, x11, #0xf10
+   911b8:	9000002b 	adrp	x11, 95000 <pmu_event_descr+0x60>
+   911bc:	913c816b 	add	x11, x11, #0xf20
    911c0:	7100407f 	cmp	w3, #0x10
    911c4:	5400058d 	b.le	91274 <_svfiprintf_r+0x574>
    911c8:	aa1c03e2 	mov	x2, x28
@@ -18426,8 +18450,8 @@ lower_el_aarch32_serror:
    91330:	35fffe20 	cbnz	w0, 912f4 <_svfiprintf_r+0x5f4>
    91334:	aa1703fc 	mov	x28, x23
    91338:	17fffebf 	b	90e34 <_svfiprintf_r+0x134>
-   9133c:	9000002a 	adrp	x10, 95000 <pmu_event_descr+0x70>
-   91340:	913c814a 	add	x10, x10, #0xf20
+   9133c:	9000002a 	adrp	x10, 95000 <pmu_event_descr+0x60>
+   91340:	913cc14a 	add	x10, x10, #0xf30
    91344:	7100417f 	cmp	w11, #0x10
    91348:	540005cd 	b.le	91400 <_svfiprintf_r+0x700>
    9134c:	aa1c03e2 	mov	x2, x28
@@ -18516,9 +18540,9 @@ lower_el_aarch32_serror:
    91498:	295613e8 	ldp	w8, w4, [sp, #176]
    9149c:	b940fbe0 	ldr	w0, [sp, #248]
    914a0:	17fffea7 	b	90f3c <_svfiprintf_r+0x23c>
-   914a4:	9000002a 	adrp	x10, 95000 <pmu_event_descr+0x70>
+   914a4:	9000002a 	adrp	x10, 95000 <pmu_event_descr+0x60>
    914a8:	b940fbe0 	ldr	w0, [sp, #248]
-   914ac:	913c814a 	add	x10, x10, #0xf20
+   914ac:	913cc14a 	add	x10, x10, #0xf30
    914b0:	7100429f 	cmp	w20, #0x10
    914b4:	5400042d 	b.le	91538 <_svfiprintf_r+0x838>
    914b8:	2a0803fa 	mov	w26, w8
@@ -18872,9 +18896,9 @@ lower_el_aarch32_serror:
    91a28:	927df038 	and	x24, x1, #0xfffffffffffffff8
    91a2c:	f9400001 	ldr	x1, [x0]
    91a30:	528f0600 	mov	w0, #0x7830                	// #30768
-   91a34:	90000022 	adrp	x2, 95000 <pmu_event_descr+0x70>
+   91a34:	90000022 	adrp	x2, 95000 <pmu_event_descr+0x60>
    91a38:	321f0284 	orr	w4, w20, #0x2
-   91a3c:	91176042 	add	x2, x2, #0x5d8
+   91a3c:	9117a042 	add	x2, x2, #0x5e8
    91a40:	f90043e2 	str	x2, [sp, #128]
    91a44:	7901a3e0 	strh	w0, [sp, #208]
    91a48:	52800040 	mov	w0, #0x2                   	// #2
@@ -19048,8 +19072,8 @@ lower_el_aarch32_serror:
    91ce8:	52800800 	mov	w0, #0x40                  	// #64
    91cec:	b90022c0 	str	w0, [x22, #32]
    91cf0:	17fffc1a 	b	90d58 <_svfiprintf_r+0x58>
-   91cf4:	90000021 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   91cf8:	9117c021 	add	x1, x1, #0x5f0
+   91cf4:	90000021 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   91cf8:	91180021 	add	x1, x1, #0x600
    91cfc:	f90043e1 	str	x1, [sp, #128]
    91d00:	2a1903e8 	mov	w8, w25
    91d04:	b94067e1 	ldr	w1, [sp, #100]
@@ -19074,8 +19098,8 @@ lower_el_aarch32_serror:
    91d50:	2a1a03e3 	mov	w3, w26
    91d54:	2a1403e4 	mov	w4, w20
    91d58:	17fffec4 	b	91868 <_svfiprintf_r+0xb68>
-   91d5c:	90000021 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   91d60:	91176021 	add	x1, x1, #0x5d8
+   91d5c:	90000021 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   91d60:	9117a021 	add	x1, x1, #0x5e8
    91d64:	f90043e1 	str	x1, [sp, #128]
    91d68:	2a1903e8 	mov	w8, w25
    91d6c:	b94067e1 	ldr	w1, [sp, #100]
@@ -19187,10 +19211,10 @@ lower_el_aarch32_serror:
    91f14:	7100187f 	cmp	w3, #0x6
    91f18:	528000c9 	mov	w9, #0x6                   	// #6
    91f1c:	1a899079 	csel	w25, w3, w9, ls	// ls = plast
-   91f20:	90000027 	adrp	x7, 95000 <pmu_event_descr+0x70>
+   91f20:	90000027 	adrp	x7, 95000 <pmu_event_descr+0x60>
    91f24:	f94047f8 	ldr	x24, [sp, #136]
    91f28:	2a1903e4 	mov	w4, w25
-   91f2c:	911820fa 	add	x26, x7, #0x608
+   91f2c:	911860fa 	add	x26, x7, #0x618
    91f30:	17fffbdd 	b	90ea4 <_svfiprintf_r+0x1a4>
    91f34:	f94083e0 	ldr	x0, [sp, #256]
    91f38:	b4ff9de0 	cbz	x0, 912f4 <_svfiprintf_r+0x5f4>
@@ -19734,16 +19758,16 @@ lower_el_aarch32_serror:
 	...
 
 00000000000927a0 <__swbuf>:
-   927a0:	90000023 	adrp	x3, 96000 <JIS_state_table+0x80>
+   927a0:	90000023 	adrp	x3, 96000 <JIS_state_table+0x70>
    927a4:	aa0103e2 	mov	x2, x1
    927a8:	2a0003e1 	mov	w1, w0
-   927ac:	f940f860 	ldr	x0, [x3, #496]
+   927ac:	f9410060 	ldr	x0, [x3, #512]
    927b0:	17ffffac 	b	92660 <__swbuf_r>
 	...
 
 00000000000927c0 <_mbtowc_r>:
-   927c0:	90000025 	adrp	x5, 96000 <JIS_state_table+0x80>
-   927c4:	f946b4a5 	ldr	x5, [x5, #3432]
+   927c0:	90000025 	adrp	x5, 96000 <JIS_state_table+0x70>
+   927c4:	f946bca5 	ldr	x5, [x5, #3448]
    927c8:	aa0503f0 	mov	x16, x5
    927cc:	d61f0200 	br	x16
 
@@ -20083,11 +20107,11 @@ lower_el_aarch32_serror:
    92cf0:	b4000d62 	cbz	x2, 92e9c <__jis_mbtowc+0x1bc>
    92cf4:	b4000a03 	cbz	x3, 92e34 <__jis_mbtowc+0x154>
    92cf8:	39400085 	ldrb	w5, [x4]
-   92cfc:	f000000c 	adrp	x12, 95000 <pmu_event_descr+0x70>
-   92d00:	f000000b 	adrp	x11, 95000 <pmu_event_descr+0x70>
+   92cfc:	f000000c 	adrp	x12, 95000 <pmu_event_descr+0x60>
+   92d00:	f000000b 	adrp	x11, 95000 <pmu_event_descr+0x60>
    92d04:	aa0003ed 	mov	x13, x0
-   92d08:	913cc18c 	add	x12, x12, #0xf30
-   92d0c:	913e016b 	add	x11, x11, #0xf80
+   92d08:	913d018c 	add	x12, x12, #0xf40
+   92d0c:	913e416b 	add	x11, x11, #0xf90
    92d10:	aa0203ef 	mov	x15, x2
    92d14:	5280000a 	mov	w10, #0x0                   	// #0
    92d18:	d2800009 	mov	x9, #0x0                   	// #0
@@ -20197,20 +20221,20 @@ lower_el_aarch32_serror:
 
 0000000000092ec0 <__assert_func>:
    92ec0:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
-   92ec4:	90000024 	adrp	x4, 96000 <JIS_state_table+0x80>
+   92ec4:	90000024 	adrp	x4, 96000 <JIS_state_table+0x70>
    92ec8:	aa0303e5 	mov	x5, x3
    92ecc:	910003fd 	mov	x29, sp
-   92ed0:	f940f887 	ldr	x7, [x4, #496]
+   92ed0:	f9410087 	ldr	x7, [x4, #512]
    92ed4:	aa0003e3 	mov	x3, x0
    92ed8:	aa0203e6 	mov	x6, x2
    92edc:	2a0103e4 	mov	w4, w1
    92ee0:	aa0503e2 	mov	x2, x5
-   92ee4:	f0000005 	adrp	x5, 95000 <pmu_event_descr+0x70>
+   92ee4:	f0000005 	adrp	x5, 95000 <pmu_event_descr+0x60>
    92ee8:	f9400ce0 	ldr	x0, [x7, #24]
-   92eec:	913f20a5 	add	x5, x5, #0xfc8
+   92eec:	913f60a5 	add	x5, x5, #0xfd8
    92ef0:	b40000a6 	cbz	x6, 92f04 <__assert_func+0x44>
-   92ef4:	f0000001 	adrp	x1, 95000 <pmu_event_descr+0x70>
-   92ef8:	913f6021 	add	x1, x1, #0xfd8
+   92ef4:	f0000001 	adrp	x1, 95000 <pmu_event_descr+0x60>
+   92ef8:	913fa021 	add	x1, x1, #0xfe8
    92efc:	94000535 	bl	943d0 <fiprintf>
    92f00:	94000554 	bl	94450 <abort>
    92f04:	d0000005 	adrp	x5, 94000 <__any_on>
@@ -20228,9 +20252,9 @@ lower_el_aarch32_serror:
 	...
 
 0000000000092f40 <strcasecmp>:
-   92f40:	f0000006 	adrp	x6, 95000 <pmu_event_descr+0x70>
+   92f40:	f0000006 	adrp	x6, 95000 <pmu_event_descr+0x60>
    92f44:	aa0003e8 	mov	x8, x0
-   92f48:	913544c6 	add	x6, x6, #0xd51
+   92f48:	913584c6 	add	x6, x6, #0xd61
    92f4c:	d2800003 	mov	x3, #0x0                   	// #0
    92f50:	38636902 	ldrb	w2, [x8, x3]
    92f54:	38636820 	ldrb	w0, [x1, x3]
@@ -20399,10 +20423,10 @@ lower_el_aarch32_serror:
    931c8:	b9001813 	str	w19, [x0, #24]
    931cc:	b90016b4 	str	w20, [x21, #20]
    931d0:	17ffffe3 	b	9315c <__multadd+0x7c>
-   931d4:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   931d8:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   931dc:	91330063 	add	x3, x3, #0xcc0
-   931e0:	91002000 	add	x0, x0, #0x8
+   931d4:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   931d8:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   931dc:	91334063 	add	x3, x3, #0xcd0
+   931e0:	91006000 	add	x0, x0, #0x18
    931e4:	d2800002 	mov	x2, #0x0                   	// #0
    931e8:	52801741 	mov	w1, #0xba                  	// #186
    931ec:	97ffff35 	bl	92ec0 <__assert_func>
@@ -20477,10 +20501,10 @@ lower_el_aarch32_serror:
    932f8:	17ffffe0 	b	93278 <__s2b+0x88>
    932fc:	52800001 	mov	w1, #0x0                   	// #0
    93300:	17ffffd4 	b	93250 <__s2b+0x60>
-   93304:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   93308:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   9330c:	91330063 	add	x3, x3, #0xcc0
-   93310:	91002000 	add	x0, x0, #0x8
+   93304:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   93308:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   9330c:	91334063 	add	x3, x3, #0xcd0
+   93310:	91006000 	add	x0, x0, #0x18
    93314:	d2800002 	mov	x2, #0x0                   	// #0
    93318:	52801a61 	mov	w1, #0xd3                  	// #211
    9331c:	97fffee9 	bl	92ec0 <__assert_func>
@@ -20573,10 +20597,10 @@ lower_el_aarch32_serror:
    93460:	b40002e0 	cbz	x0, 934bc <__i2b+0x7c>
    93464:	f9400001 	ldr	x1, [x0]
    93468:	f9000441 	str	x1, [x2, #8]
-   9346c:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
+   9346c:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
    93470:	b9001814 	str	w20, [x0, #24]
    93474:	a94153f3 	ldp	x19, x20, [sp, #16]
-   93478:	fd40d820 	ldr	d0, [x1, #432]
+   93478:	fd40e020 	ldr	d0, [x1, #448]
    9347c:	fd000800 	str	d0, [x0, #16]
    93480:	a8c27bfd 	ldp	x29, x30, [sp], #32
    93484:	d65f03c0 	ret
@@ -20586,10 +20610,10 @@ lower_el_aarch32_serror:
    93494:	f9003660 	str	x0, [x19, #104]
    93498:	aa0003e2 	mov	x2, x0
    9349c:	b5fffe00 	cbnz	x0, 9345c <__i2b+0x1c>
-   934a0:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   934a4:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   934a8:	91330063 	add	x3, x3, #0xcc0
-   934ac:	91002000 	add	x0, x0, #0x8
+   934a0:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   934a4:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   934a8:	91334063 	add	x3, x3, #0xcd0
+   934ac:	91006000 	add	x0, x0, #0x18
    934b0:	d2800002 	mov	x2, #0x0                   	// #0
    934b4:	528028a1 	mov	w1, #0x145                 	// #325
    934b8:	97fffe82 	bl	92ec0 <__assert_func>
@@ -20598,13 +20622,13 @@ lower_el_aarch32_serror:
    934c4:	d2800021 	mov	x1, #0x1                   	// #1
    934c8:	940002ea 	bl	94070 <_calloc_r>
    934cc:	b4fffea0 	cbz	x0, 934a0 <__i2b+0x60>
-   934d0:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
+   934d0:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
    934d4:	b9001814 	str	w20, [x0, #24]
    934d8:	a94153f3 	ldp	x19, x20, [sp, #16]
-   934dc:	fd40d420 	ldr	d0, [x1, #424]
-   934e0:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
+   934dc:	fd40dc20 	ldr	d0, [x1, #440]
+   934e0:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
    934e4:	fd000400 	str	d0, [x0, #8]
-   934e8:	fd40d820 	ldr	d0, [x1, #432]
+   934e8:	fd40e020 	ldr	d0, [x1, #448]
    934ec:	fd000800 	str	d0, [x0, #16]
    934f0:	a8c27bfd 	ldp	x29, x30, [sp], #32
    934f4:	d65f03c0 	ret
@@ -20725,10 +20749,10 @@ lower_el_aarch32_serror:
    936bc:	a94153f3 	ldp	x19, x20, [sp, #16]
    936c0:	a8c47bfd 	ldp	x29, x30, [sp], #64
    936c4:	d65f03c0 	ret
-   936c8:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   936cc:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   936d0:	91330063 	add	x3, x3, #0xcc0
-   936d4:	91002000 	add	x0, x0, #0x8
+   936c8:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   936cc:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   936d0:	91334063 	add	x3, x3, #0xcd0
+   936d4:	91006000 	add	x0, x0, #0x18
    936d8:	d2800002 	mov	x2, #0x0                   	// #0
    936dc:	52802c41 	mov	w1, #0x162                 	// #354
    936e0:	97fffdf8 	bl	92ec0 <__assert_func>
@@ -20782,8 +20806,8 @@ lower_el_aarch32_serror:
    937a0:	f900001f 	str	xzr, [x0]
    937a4:	17ffffe6 	b	9373c <__pow5mult+0x4c>
    937a8:	51000442 	sub	w2, w2, #0x1
-   937ac:	f0000004 	adrp	x4, 96000 <JIS_state_table+0x80>
-   937b0:	9101a084 	add	x4, x4, #0x68
+   937ac:	f0000004 	adrp	x4, 96000 <JIS_state_table+0x70>
+   937b0:	9101e084 	add	x4, x4, #0x78
    937b4:	52800003 	mov	w3, #0x0                   	// #0
    937b8:	b862d882 	ldr	w2, [x4, w2, sxtw #2]
    937bc:	97fffe49 	bl	930e0 <__multadd>
@@ -20800,10 +20824,10 @@ lower_el_aarch32_serror:
    937e8:	f90032d4 	str	x20, [x22, #96]
    937ec:	f900029f 	str	xzr, [x20]
    937f0:	17ffffcd 	b	93724 <__pow5mult+0x34>
-   937f4:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   937f8:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   937fc:	91330063 	add	x3, x3, #0xcc0
-   93800:	91002000 	add	x0, x0, #0x8
+   937f4:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   937f8:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   937fc:	91334063 	add	x3, x3, #0xcd0
+   93800:	91006000 	add	x0, x0, #0x18
    93804:	d2800002 	mov	x2, #0x0                   	// #0
    93808:	528028a1 	mov	w1, #0x145                 	// #325
    9380c:	97fffdad 	bl	92ec0 <__assert_func>
@@ -20892,10 +20916,10 @@ lower_el_aarch32_serror:
    93950:	eb0300df 	cmp	x6, x3
    93954:	54ffff28 	b.hi	93938 <__lshift+0x128>  // b.pmore
    93958:	17ffffec 	b	93908 <__lshift+0xf8>
-   9395c:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   93960:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   93964:	91330063 	add	x3, x3, #0xcc0
-   93968:	91002000 	add	x0, x0, #0x8
+   9395c:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   93960:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   93964:	91334063 	add	x3, x3, #0xcd0
+   93968:	91006000 	add	x0, x0, #0x18
    9396c:	d2800002 	mov	x2, #0x0                   	// #0
    93970:	52803bc1 	mov	w1, #0x1de                 	// #478
    93974:	97fffd53 	bl	92ec0 <__assert_func>
@@ -21036,17 +21060,17 @@ lower_el_aarch32_serror:
    93b84:	9a9f2084 	csel	x4, x4, xzr, cs	// cs = hs, nlast
    93b88:	8b040161 	add	x1, x11, x4
    93b8c:	17ffffea 	b	93b34 <__mdiff+0x164>
-   93b90:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   93b94:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   93b98:	91330063 	add	x3, x3, #0xcc0
-   93b9c:	91002000 	add	x0, x0, #0x8
+   93b90:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   93b94:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   93b98:	91334063 	add	x3, x3, #0xcd0
+   93b9c:	91006000 	add	x0, x0, #0x18
    93ba0:	d2800002 	mov	x2, #0x0                   	// #0
    93ba4:	528046e1 	mov	w1, #0x237                 	// #567
    93ba8:	97fffcc6 	bl	92ec0 <__assert_func>
-   93bac:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   93bb0:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   93bb4:	91330063 	add	x3, x3, #0xcc0
-   93bb8:	91002000 	add	x0, x0, #0x8
+   93bac:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   93bb0:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   93bb4:	91334063 	add	x3, x3, #0xcd0
+   93bb8:	91006000 	add	x0, x0, #0x18
    93bbc:	d2800002 	mov	x2, #0x0                   	// #0
    93bc0:	528048a1 	mov	w1, #0x245                 	// #581
    93bc4:	97fffcbf 	bl	92ec0 <__assert_func>
@@ -21237,10 +21261,10 @@ lower_el_aarch32_serror:
    93e9c:	d65f03c0 	ret
    93ea0:	b9403be2 	ldr	w2, [sp, #56]
    93ea4:	17ffffec 	b	93e54 <__d2b+0xc4>
-   93ea8:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x70>
-   93eac:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   93eb0:	91330063 	add	x3, x3, #0xcc0
-   93eb4:	91002000 	add	x0, x0, #0x8
+   93ea8:	d0000003 	adrp	x3, 95000 <pmu_event_descr+0x60>
+   93eac:	f0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   93eb0:	91334063 	add	x3, x3, #0xcd0
+   93eb4:	91006000 	add	x0, x0, #0x18
    93eb8:	d2800002 	mov	x2, #0x0                   	// #0
    93ebc:	528061e1 	mov	w1, #0x30f                 	// #783
    93ec0:	97fffc00 	bl	92ec0 <__assert_func>
@@ -21292,8 +21316,8 @@ lower_el_aarch32_serror:
    93f74:	71000400 	subs	w0, w0, #0x1
    93f78:	54ffffc1 	b.ne	93f70 <_mprec_log10+0x10>  // b.any
    93f7c:	d65f03c0 	ret
-   93f80:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
-   93f84:	91038021 	add	x1, x1, #0xe0
+   93f80:	f0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
+   93f84:	9103c021 	add	x1, x1, #0xf0
    93f88:	fc60d820 	ldr	d0, [x1, w0, sxtw #3]
    93f8c:	d65f03c0 	ret
 
@@ -21515,27 +21539,27 @@ lower_el_aarch32_serror:
 	...
 
 00000000000942e0 <_wcsnrtombs_r>:
-   942e0:	d0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
-   942e4:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x80>
-   942e8:	913200c6 	add	x6, x6, #0xc80
-   942ec:	f940f800 	ldr	x0, [x0, #496]
+   942e0:	d0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
+   942e4:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x70>
+   942e8:	913240c6 	add	x6, x6, #0xc90
+   942ec:	f9410000 	ldr	x0, [x0, #512]
    942f0:	17ffff90 	b	94130 <_wcsnrtombs_l>
 	...
 
 0000000000094300 <wcsnrtombs>:
-   94300:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x80>
+   94300:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x70>
    94304:	aa0003e8 	mov	x8, x0
    94308:	aa0103e7 	mov	x7, x1
    9430c:	aa0203e5 	mov	x5, x2
-   94310:	f940f8c0 	ldr	x0, [x6, #496]
+   94310:	f94100c0 	ldr	x0, [x6, #512]
    94314:	aa0303e6 	mov	x6, x3
    94318:	aa0803e1 	mov	x1, x8
    9431c:	aa0503e3 	mov	x3, x5
    94320:	aa0703e2 	mov	x2, x7
    94324:	aa0403e5 	mov	x5, x4
    94328:	aa0603e4 	mov	x4, x6
-   9432c:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x80>
-   94330:	913200c6 	add	x6, x6, #0xc80
+   9432c:	d0000006 	adrp	x6, 96000 <JIS_state_table+0x70>
+   94330:	913240c6 	add	x6, x6, #0xc90
    94334:	17ffff7f 	b	94130 <_wcsnrtombs_l>
 	...
 
@@ -21587,13 +21611,13 @@ lower_el_aarch32_serror:
    943dc:	910003fd 	mov	x29, sp
    943e0:	910403ec 	add	x12, sp, #0x100
    943e4:	910343e8 	add	x8, sp, #0xd0
-   943e8:	d0000009 	adrp	x9, 96000 <JIS_state_table+0x80>
+   943e8:	d0000009 	adrp	x9, 96000 <JIS_state_table+0x70>
    943ec:	a90333ec 	stp	x12, x12, [sp, #48]
    943f0:	f90023e8 	str	x8, [sp, #64]
    943f4:	aa0103e8 	mov	x8, x1
    943f8:	29092beb 	stp	w11, w10, [sp, #72]
    943fc:	aa0003e1 	mov	x1, x0
-   94400:	f940f920 	ldr	x0, [x9, #496]
+   94400:	f9410120 	ldr	x0, [x9, #512]
    94404:	3d8017e0 	str	q0, [sp, #80]
    94408:	ad41c3e0 	ldp	q0, q16, [sp, #48]
    9440c:	3d801be1 	str	q1, [sp, #96]
@@ -21620,7 +21644,7 @@ lower_el_aarch32_serror:
    94458:	910003fd 	mov	x29, sp
    9445c:	94000099 	bl	946c0 <raise>
    94460:	52800020 	mov	w0, #0x1                   	// #1
-   94464:	97ffb283 	bl	80e70 <_exit>
+   94464:	97ffb293 	bl	80eb0 <_exit>
 	...
 
 0000000000094470 <_init_signal_r>:
@@ -21778,10 +21802,10 @@ lower_el_aarch32_serror:
 
 00000000000946c0 <raise>:
    946c0:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   946c4:	d0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
+   946c4:	d0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
    946c8:	910003fd 	mov	x29, sp
    946cc:	a90153f3 	stp	x19, x20, [sp, #16]
-   946d0:	f940f834 	ldr	x20, [x1, #496]
+   946d0:	f9410034 	ldr	x20, [x1, #512]
    946d4:	71007c1f 	cmp	w0, #0x1f
    946d8:	540003e8 	b.hi	94754 <raise+0x94>  // b.pmore
    946dc:	f940aa82 	ldr	x2, [x20, #336]
@@ -21822,12 +21846,12 @@ lower_el_aarch32_serror:
 
 0000000000094770 <signal>:
    94770:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
-   94774:	d0000002 	adrp	x2, 96000 <JIS_state_table+0x80>
+   94774:	d0000002 	adrp	x2, 96000 <JIS_state_table+0x70>
    94778:	910003fd 	mov	x29, sp
    9477c:	a90153f3 	stp	x19, x20, [sp, #16]
    94780:	93407c13 	sxtw	x19, w0
    94784:	f90013f5 	str	x21, [sp, #32]
-   94788:	f940f855 	ldr	x21, [x2, #496]
+   94788:	f9410055 	ldr	x21, [x2, #512]
    9478c:	71007e7f 	cmp	w19, #0x1f
    94790:	54000148 	b.hi	947b8 <signal+0x48>  // b.pmore
    94794:	aa0103f4 	mov	x20, x1
@@ -21859,10 +21883,10 @@ lower_el_aarch32_serror:
 
 0000000000094800 <_init_signal>:
    94800:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   94804:	d0000000 	adrp	x0, 96000 <JIS_state_table+0x80>
+   94804:	d0000000 	adrp	x0, 96000 <JIS_state_table+0x70>
    94808:	910003fd 	mov	x29, sp
    9480c:	f9000bf3 	str	x19, [sp, #16]
-   94810:	f940f813 	ldr	x19, [x0, #496]
+   94810:	f9410013 	ldr	x19, [x0, #512]
    94814:	f940aa60 	ldr	x0, [x19, #336]
    94818:	b40000a0 	cbz	x0, 9482c <_init_signal+0x2c>
    9481c:	52800000 	mov	w0, #0x0                   	// #0
@@ -21885,10 +21909,10 @@ lower_el_aarch32_serror:
 
 0000000000094860 <__sigtramp>:
    94860:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
-   94864:	d0000001 	adrp	x1, 96000 <JIS_state_table+0x80>
+   94864:	d0000001 	adrp	x1, 96000 <JIS_state_table+0x70>
    94868:	910003fd 	mov	x29, sp
    9486c:	a90153f3 	stp	x19, x20, [sp, #16]
-   94870:	f940f834 	ldr	x20, [x1, #496]
+   94870:	f9410034 	ldr	x20, [x1, #512]
    94874:	71007c1f 	cmp	w0, #0x1f
    94878:	54000508 	b.hi	94918 <__sigtramp+0xb8>  // b.pmore
    9487c:	2a0003f3 	mov	w19, w0
@@ -21942,7 +21966,7 @@ lower_el_aarch32_serror:
    94934:	b9012a9f 	str	wzr, [x20, #296]
    94938:	2a0103e0 	mov	w0, w1
    9493c:	2a0203e1 	mov	w1, w2
-   94940:	97ffb154 	bl	80e90 <_kill>
+   94940:	97ffb164 	bl	80ed0 <_kill>
    94944:	3100041f 	cmn	w0, #0x1
    94948:	54000080 	b.eq	94958 <_kill_r+0x38>  // b.none
    9494c:	a94153f3 	ldp	x19, x20, [sp, #16]
@@ -21956,7 +21980,7 @@ lower_el_aarch32_serror:
    9496c:	d65f03c0 	ret
 
 0000000000094970 <_getpid_r>:
-   94970:	17ffb144 	b	80e80 <_getpid>
+   94970:	17ffb154 	b	80ec0 <_getpid>
 	...
 
 0000000000094980 <__trunctfdf2>:
