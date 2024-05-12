@@ -46,9 +46,9 @@ case $setup in
         make -C $BAO_SRCS\
             PLATFORM=$PLATFORM\
             CONFIG_REPO=$BAO_CFGS\
-            CONFIG=interf
+            CONFIG=baremetal
         
-        cp $BAO_SRCS/bin/$PLATFORM/interf/bao.bin $WRKDIR_IMGS
+        cp $BAO_SRCS/bin/$PLATFORM/baremetal/bao.bin $WRKDIR_IMGS
     ;;
     "solo")
         echo "Building setup 1:"

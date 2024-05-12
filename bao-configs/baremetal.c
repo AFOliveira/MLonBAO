@@ -7,12 +7,7 @@ struct config config = {
     
     CONFIG_HEADER
 
-    .shmemlist_size = 1,
-    .shmemlist = (struct shmem[]) {
-        [0] = { .size = 0x00010000, }
-    },
-    
-    .vmlist_size = 2,
+    .vmlist_size = 1,
     .vmlist = {
         { 
             .image = {
