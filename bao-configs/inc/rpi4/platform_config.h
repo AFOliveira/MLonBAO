@@ -6,7 +6,7 @@
 #define LINUX_MEM_BASE              0x20000000
 #define LINUX_MEM_SIZE              0x40000000
 #define LINUX_MEM_PHYS              0x20000000
-#define LINUX_CACHE_COLORS          0b0001
+#define LINUX_CACHE_COLORS          0b1100
 
 // Devices
 #define LINUX_DEV_NUM               2
@@ -29,7 +29,7 @@
 #define BAREMETAL_MEM_REG_NUM       1
 #define BAREMETAL_MEM_BASE          0x80000
 #define BAREMETAL_MEM_SIZE          0x1000000
-#define BAREMETAL_CACHE_COLORS      0b1100
+#define BAREMETAL_CACHE_COLORS      0b0011
 
 // Devices
 #define BAREMETAL_DEV_NUM               2

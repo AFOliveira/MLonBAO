@@ -46,19 +46,20 @@ uint64_t curr_time;
 #define N_CORES (1)
 #define L1_CACHE_SIZE   (333*1024)
 #define L2_CACHE_SIZE   (1024*1024)
-//#define BUFFER_SIZE   (333*1024)
+#define NUM_SUBSETS     (16)
+#define SUBSET_SIZE     (L2_CACHE_SIZE/NUM_SUBSETS)
 #define CACHE_LINE_SIZE (64)
 
 volatile uint8_t cache_l1[N_CORES][L1_CACHE_SIZE] __attribute__((aligned(L2_CACHE_SIZE)));
+volatile uint8_t cache_l2[N_CORES][NUM_SUBSETS][SUBSET_SIZE]__attribute__((aligned(L2_CACHE_SIZE)));
 volatile uint64_t exec_time_samples[NUM_SAMPLES];
 
+#define NUM_CPUS   (3)
 
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
 
 const size_t sample_events[] = {
-    L1D_CACHE_REFILL,
-    L1D_CACHE,
     L2D_CACHE_REFILL,
     L2D_CACHE,
     MEM_ACCESS,
@@ -79,7 +80,7 @@ void pmu_setup_counters(size_t n, const size_t events[]){
 }
 
 void pmu_sample(size_t sample_idx) {
-    size_t n = PMU_PARAMS;
+    size_t n = pmu_num_counters();
     for(int i = 0; i < n; i++){
         pmu_samples[i][sample_idx] = pmu_counter_get(i);
     }
@@ -186,12 +187,18 @@ void dummy_cache(uint8_t cpu_id)
     uint64_t final_cycle = 0;
     uint64_t exec_cycles = 0;
 
+    int num_acc_subsets = 9;
+
     sample_count=0;
     
+    printf("subset %d/16\n", num_acc_subsets);
+
     while(1){
         for(size_t it_idx = 0; it_idx < MAX_ITER; it_idx++){
-            for (size_t i = 0; i < L1_CACHE_SIZE; i+= CACHE_LINE_SIZE) {
-                cache_l1[cpu_id][i] = i;
+            for(int i=0; i<num_acc_subsets; i++){
+                for (size_t j = 0; j < SUBSET_SIZE; j+= CACHE_LINE_SIZE) {
+                    cache_l2[cpu_id][i][j] = j;
+                }
             }
         }
         sample_count++;

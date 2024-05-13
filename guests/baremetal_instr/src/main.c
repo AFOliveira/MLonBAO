@@ -159,7 +159,7 @@ void main(void){
     unsigned long exec_cycles = 0;
 
     int num_acc_subsets = 10;
-
+ 
     while(1) {
         printf("Press 's' to start...\n");
         while(uart_getchar() != 's');

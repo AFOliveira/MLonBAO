@@ -17,7 +17,7 @@ struct config config = {
             },
 
             .entry = BAREMETAL_ENTRY,
-            .colors = BAREMETAL_CACHE_COLORS,
+            //.colors = BAREMETAL_CACHE_COLORS,
             .platform = {
                 .cpu_num = BAREMETAL_CPU_NUM,
                 

@@ -69,7 +69,7 @@ struct config config = {
                 .arch = {
                     .gic = {
                         .gicc_addr = LINUX_PLAT_GICC_ADDR,
-                        .gicd_addr = LINUX_PLAT_GICD_ADDR
+                        .gicd_addr = LINUX_PLAT_GICD_ADDR,
                     },
                 }
             },
