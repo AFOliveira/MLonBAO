@@ -44,15 +44,21 @@ df2.set_index("Setup", inplace=True)
 df3 = pd.DataFrame(data_bus_cycles)
 df3.set_index("Setup", inplace=True)
 
+# Creating DataFrame
+df4 = pd.DataFrame(othervariable_to_add)
+df4.set_index("Setup", inplace=True)
+
 # Transposing DataFrame for plotting
 df_t = df.transpose()
 df2_t = df2.transpose()
 df3_t = df3.transpose()
+df4_t = df4.transpose()
 
 # Normalize data relative to the "Solo" setup
 df_t = df_t.div(df_t["Solo"], axis=0)
 df2_t = df2_t.div(df2_t["Solo"], axis=0)
 df3_t = df3_t.div(df3_t["Solo"], axis=0)
+df4_t = df4_t.div(df3_t["Solo"], axis=0)
 
 # Custom colors for the bars
 colors = {
@@ -156,13 +162,13 @@ for i, bg_color in enumerate(bg_colors):
     ax4.axvspan(start, end, color=bg_color, alpha=0.3, ymin=0, ymax=1) 
 
 # Plotting each column with custom offsets
-for i, column in enumerate(df2_t.columns):
+for i, column in enumerate(df4_t.columns):
     offsets = x + i * bar_width - ((len(df2_t.columns) * bar_width) / 2 - bar_width / 2)
-    ax4.bar(offsets, df2_t[column], width=bar_width, color=colors[column], label=column,
+    ax4.bar(offsets, df4_t[column], width=bar_width, color=colors[column], label=column,
               edgecolor='black', linewidth=1)
 
 # Customizing the plot (with legend positioning adjustments)
-ax4.set_ylabel("L2 Misses Relative to Solo", fontsize=10)
+ax4.set_ylabel("Misses per bus Cycle", fontsize=10)
 ax4.set_xticks(x)
 ax4.set_xticklabels(df2_t.index, rotation=0, fontsize=8)
 # Adjust legend position for better visibility and add border
