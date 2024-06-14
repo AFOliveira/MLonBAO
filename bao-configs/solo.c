@@ -17,7 +17,6 @@ struct config config = {
             },
 
             .entry = LINUX_ENTRY,
-
             .platform = {
                 .cpu_num = LINUX_CPU_NUM,
 

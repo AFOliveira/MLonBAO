@@ -4,7 +4,8 @@ export WRKDIR_IMGS=$WRKDIR/imgs
 
 export GUESTS_DIR=$ROOT_DIR/guests
 export LINUX_GUEST_DIR=$GUESTS_DIR/linux_ml
-export BAREMETAL_GUEST_DIR=$GUESTS_DIR/baremetal_interf
+export BAREMETAL_INTERF_GUEST_DIR=$GUESTS_DIR/baremetal_interf
+export BAREMETAL_INSTR_GUEST_DIR=$GUESTS_DIR/baremetal_instr
 
 export BAO_SRCS=$ROOT_DIR/bao-hypervisor
 export BAO_CFGS=$ROOT_DIR/bao-configs
@@ -25,6 +26,30 @@ export PLATFORM=$platform
 
 # Switch between different setups
 case $setup in
+    "bare+cc")
+        echo "Building setup 0:"
+        echo "Guests:"
+        echo "  - Baremetal+CC"
+        echo " "
+
+        if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
+            echo "Building Baremetal guest..."
+            make -C $BAREMETAL_INSTR_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INSTR_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+        fi
+
+        echo "Baremetal guest built successfully!"
+
+        echo "Building Bao..."
+        make -C $BAO_SRCS clean
+        
+        make -C $BAO_SRCS\
+            PLATFORM=$PLATFORM\
+            CONFIG_REPO=$BAO_CFGS\
+            CONFIG=baremetal
+        
+        cp $BAO_SRCS/bin/$PLATFORM/baremetal/bao.bin $WRKDIR_IMGS
+    ;;
     "solo")
         echo "Building setup 1:"
         echo "Guests:"
@@ -34,7 +59,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -59,7 +84,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -67,8 +92,8 @@ case $setup in
 
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
-            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_SRC/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            make -C $BAREMETAL_INTERF_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INTERF_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
@@ -92,7 +117,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -119,7 +144,7 @@ case $setup in
         if [ ! -f $WRKDIR_IMGS/linux.bin ]; then
             echo "Building Linux guest..."
             cd $LINUX_GUEST_DIR
-            bash build_linux.sh
+            bash build_linux.sh "$PLATFORM" "$ROOT_DIR"
             cd $ROOT_DIR/scripts
         fi
 
@@ -127,8 +152,8 @@ case $setup in
 
         if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
             echo "Building Baremetal guest..."
-            make -C $BAREMETAL_GUEST_DIR PLATFORM=$PLATFORM
-            cp $BAREMETAL_SRC/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+            make -C $BAREMETAL_INTERF_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INTERF_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"

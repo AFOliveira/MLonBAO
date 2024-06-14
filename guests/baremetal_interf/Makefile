@@ -16,10 +16,8 @@
 
 
 NAME := baremetal
-OPT_LEVEL = 3
+OPT_LEVEL = 2
 DEBUG_LEVEL = 3
-
-PLATFORM:=zcu104
 
 ifneq ($(MAKECMDGOALS), clean)
 ifeq ($(PLATFORM),)
@@ -29,9 +27,6 @@ endif
 
 SRC_DIR:=./src
 BUILD_DIR:=build/$(PLATFORM)
-ifneq ($(MEM_BASE),)
-BUILD_DIR:=build/$(PLATFORM)@$(MEM_BASE)
-endif
 TARGET:=$(BUILD_DIR)/$(NAME)
 CORE_DIR:=$(SRC_DIR)/core
 PLATFORM_DIR:=$(SRC_DIR)/platform/$(PLATFORM)
@@ -83,17 +78,23 @@ OBJCOPY=$(CROSS_COMPILE)objcopy
 OBJDUMP=$(CROSS_COMPILE)objdump
 
 GENERIC_FLAGS = $(ARCH_GENERIC_FLAGS) -O$(OPT_LEVEL) -g$(DEBUG_LEVEL) -static
-ASFLAGS = $(GENERIC_FLAGS) $(ARCH_ASFLAGS) 
-CFLAGS = $(GENERIC_FLAGS) $(ARCH_CFLAGS) 
-CPPFLAGS =	$(ARCH_CPPFLAGS) $(addprefix -I, $(INC_DIRS)) -MD -MF $@.d
-ifneq ($(SINGLE_CORE),)
-CPPFLAGS+=-DSINGLE_CORE=y
+CPPFLAGS = $(ARCH_CPPFLAGS) $(addprefix -I, $(INC_DIRS)) -MD -MF $@.d
+ifneq ($(MPU),)
+CPPFLAGS+=-DMPU
 endif
 ifneq ($(MEM_BASE),)
 CPPFLAGS+=-DMEM_BASE=$(MEM_BASE)
 endif
+ifneq ($(MEM_SIZE),)
+CPPFLAGS+=-DMEM_SIZE=$(MEM_SIZE)
+endif
+ifneq ($(SINGLE_CORE),)
+CPPFLAGS+=-DSINGLE_CORE=y
+endif
+ASFLAGS = $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_ASFLAGS) 
+CFLAGS = $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_CFLAGS) 
 LDFLAGS = $(GENERIC_FLAGS) $(ARCH_LDFLAGS) -nostartfiles
-all: $(TARGET).bin 
+all: $(TARGET).bin
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
@@ -105,6 +106,7 @@ $(TARGET).bin: $(TARGET).elf
 $(TARGET).elf: $(OBJS) $(GEN_LD_FILE)
 	$(CC) $(LDFLAGS) -T$(GEN_LD_FILE) $(OBJS) -o $@
 	$(OBJDUMP) -S $@ > $(TARGET).asm
+	$(OBJDUMP) -x -d --wide $@ > $(TARGET).lst
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -112,10 +114,10 @@ $(BUILD_DIR):
 $(OBJS): | $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
-	$(CC) $(ASFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(ASFLAGS) -c $< -o $@
 
 $(GEN_LD_FILE): $(LD_FILE)
 	$(CC) $(CPPFLAGS) -E -x assembler-with-cpp $< | grep "^[^#;]" > $@

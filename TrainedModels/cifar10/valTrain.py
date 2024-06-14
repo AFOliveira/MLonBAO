@@ -1,5 +1,7 @@
-import numpy as np
 from time import perf_counter
+start_time2 = perf_counter()  # Start timing
+
+import numpy as np
 from tflite_runtime.interpreter import Interpreter
 
 
@@ -22,18 +24,35 @@ def run_inference(interpreter, input_data):
     output_data = interpreter.get_tensor(output_details[0]['index'])
     return output_data
 
+#f = open('inference_times.txt', 'w')
+
 # Evaluate the model on the validation dataset
 correct_predictions = 0
-total_images = len(val_images)  # Ensuring the total count is a scalar integer
-for i in range(total_images):
+total_inferences = 0
+inference_time = 0
+for i in range(len(val_images)):
     input_data = np.expand_dims(val_images[i], axis=0).astype(np.float32)
+    
     start_time = perf_counter()  # Start timing
     prediction = run_inference(interpreter, input_data)
     end_time = perf_counter()  # End timing
-    print(f"Inference time: {end_time - start_time:.6f} seconds")
+    
+    inference_time += (end_time - start_time)
+    #print(f"Inference time: {end_time - start_time:.6f} seconds")
+    #f.write(f"{end_time - start_time:.6f}\n")
+    
     predicted_label = np.argmax(prediction)
     correct_predictions += (predicted_label == val_labels[i])
+    total_inferences = total_inferences + 1
 
-# Calculate the accuracy and ensure it is a float
-accuracy = float(correct_predictions) / total_images
-print(f'TFLite model accuracy: {accuracy:.4f}')
+# Calculate the accuracy
+accuracy = correct_predictions / len(val_labels)
+print(f'TFLite model accuracy: {accuracy}')
+
+print (f'Total inferences: {total_inferences}')
+print (f'Total inference time: {inference_time:.6f} seconds')
+print (f'')
+
+#Finish timing
+final_time2 = perf_counter()
+print(f"Total time: {final_time2 - start_time2:.6f} seconds")

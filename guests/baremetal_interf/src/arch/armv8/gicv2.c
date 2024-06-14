@@ -18,8 +18,8 @@
 #include <irq.h>
 #include <cpu.h>
 
-volatile gicd_t* gicd = (void*)0xF9010000;
-volatile gicc_t* gicc = (void*)0xF902f000;
+volatile gicd_t* gicd = (void*)0xff841000;
+volatile gicc_t* gicc = (void*)0xff842000;
 
 static size_t gic_num_int(){
     return ((gicd->TYPER & BIT_MASK(GICD_TYPER_ITLINENUM_OFF, GICD_TYPER_ITLINENUM_LEN) >>
@@ -52,7 +52,7 @@ void gicc_init(){
     }
 
     gicc->PMR = -1;
-    gicc->CTLR |= GICC_CTLR_EN_BIT;
+    gicc->CTLR = GICC_CTLR_EN_BIT;
     
 }
 
@@ -86,7 +86,7 @@ void gicd_init(){
     /* No need to setup gicd->NSACR as all interrupts are  setup to group 1 */
 
     /* Enable distributor */
-    gicd->CTLR |= GICD_CTLR_EN_BIT;
+    gicd->CTLR = GICD_CTLR_EN_BIT;
 }
 
 void gic_init() {
