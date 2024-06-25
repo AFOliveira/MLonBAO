@@ -8,6 +8,7 @@ export BAREMETAL_INTERF_GUEST_DIR=$GUESTS_DIR/baremetal_interf
 export BAREMETAL_INSTR_GUEST_DIR=$GUESTS_DIR/baremetal_instr
 
 export BAO_SRCS=$ROOT_DIR/bao-hypervisor
+#export BAO_SRCS=$ROOT_DIR/bao-throttling
 export BAO_CFGS=$ROOT_DIR/bao-configs
 
 export CROSS_COMPILE=aarch64-none-elf-
