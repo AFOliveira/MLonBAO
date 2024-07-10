@@ -4,9 +4,11 @@
 #define LINUX_CPU_AFFIN             0b0001
 #define LINUX_MEM_REG_NUM           1
 #define LINUX_MEM_BASE              0x20000000
-#define LINUX_MEM_SIZE              0x40000000
+#define LINUX_MEM_SIZE              0x60000000
 #define LINUX_MEM_PHYS              0x20000000
 #define LINUX_CACHE_COLORS          0b1100
+
+#define LINUX_MEM_THROTT            0
 
 // Devices
 #define LINUX_DEV_NUM               2
@@ -31,8 +33,10 @@
 #define BAREMETAL_MEM_SIZE          0x1000000
 #define BAREMETAL_CACHE_COLORS      0b0011
 
+#define BAREMETAL_MEM_THROTT        0
+
 // Devices
-#define BAREMETAL_DEV_NUM               2
+#define BAREMETAL_DEV_NUM           2
 // Devices - UART
 #define BAREMETAL_DEV_UART_PA       0xfe215000
 #define BAREMETAL_DEV_UART_VA       0xfe215000

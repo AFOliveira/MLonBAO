@@ -8,7 +8,7 @@ struct config config = {
     CONFIG_HEADER
 
     .vmlist_size = 1,
-    .vmlist = {
+    .vmlist = (struct vm_config[]){
         { 
             .image = {
                 .base_addr = BAREMETAL_BASE_ADDR,
@@ -18,6 +18,13 @@ struct config config = {
 
             .entry = BAREMETAL_ENTRY,
             //.colors = BAREMETAL_CACHE_COLORS,
+            #ifdef BAREMETAL_MEM_THROTT
+                .mem_throth = {
+                    .mem_thrott_en = BAREMETAL_MEM_THROTT,
+                    .budget = 10000,
+                    .period_us = 2000000
+                },
+            #endif
             .platform = {
                 .cpu_num = BAREMETAL_CPU_NUM,
                 

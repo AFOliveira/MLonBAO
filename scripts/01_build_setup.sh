@@ -7,8 +7,10 @@ export LINUX_GUEST_DIR=$GUESTS_DIR/linux_ml
 export BAREMETAL_INTERF_GUEST_DIR=$GUESTS_DIR/baremetal_interf
 export BAREMETAL_INSTR_GUEST_DIR=$GUESTS_DIR/baremetal_instr
 
-export BAO_SRCS=$ROOT_DIR/bao-hypervisor
-#export BAO_SRCS=$ROOT_DIR/bao-throttling
+#export BAO_SRCS=$ROOT_DIR/bao-hypervisor
+#export BAO_SRCS=$ROOT_DIR/bao-memsafe
+export BAO_SRCS=$ROOT_DIR/bao-memThrott
+
 export BAO_CFGS=$ROOT_DIR/bao-configs
 
 export CROSS_COMPILE=aarch64-none-elf-
@@ -27,7 +29,7 @@ export PLATFORM=$platform
 
 # Switch between different setups
 case $setup in
-    "bare+cc")
+    "instr")
         echo "Building setup 0:"
         echo "Guests:"
         echo "  - Baremetal+CC"
@@ -37,6 +39,30 @@ case $setup in
             echo "Building Baremetal guest..."
             make -C $BAREMETAL_INSTR_GUEST_DIR PLATFORM=$PLATFORM
             cp $BAREMETAL_INSTR_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
+        fi
+
+        echo "Baremetal guest built successfully!"
+
+        echo "Building Bao..."
+        make -C $BAO_SRCS clean
+        
+        make -C $BAO_SRCS\
+            PLATFORM=$PLATFORM\
+            CONFIG_REPO=$BAO_CFGS\
+            CONFIG=baremetal
+        
+        cp $BAO_SRCS/bin/$PLATFORM/baremetal/bao.bin $WRKDIR_IMGS
+    ;;
+    "bare")
+        echo "Building setup 0:"
+        echo "Guests:"
+        echo "  - Baremetal+CC"
+        echo " "
+
+        if [ ! -f $WRKDIR_IMGS/baremetal.bin ]; then
+            echo "Building Baremetal guest..."
+            make -C $BAREMETAL_INTERF_GUEST_DIR PLATFORM=$PLATFORM
+            cp $BAREMETAL_INTERF_GUEST_DIR/build/$PLATFORM/baremetal.bin $WRKDIR_IMGS
         fi
 
         echo "Baremetal guest built successfully!"
@@ -70,9 +96,9 @@ case $setup in
         make -C $BAO_SRCS\
             PLATFORM=$PLATFORM\
             CONFIG_REPO=$BAO_CFGS\
-            CONFIG=solo
+            CONFIG=solo_thrott
         
-        cp $BAO_SRCS/bin/$PLATFORM/solo/bao.bin $WRKDIR_IMGS
+        cp $BAO_SRCS/bin/$PLATFORM/solo_thrott/bao.bin $WRKDIR_IMGS
     ;;
         
     "interf")
@@ -103,9 +129,9 @@ case $setup in
         make -C $BAO_SRCS\
             PLATFORM=$PLATFORM\
             CONFIG_REPO=$BAO_CFGS\
-            CONFIG=interf
+            CONFIG=interf_thrott
         
-        cp $BAO_SRCS/bin/$PLATFORM/interf/bao.bin $WRKDIR_IMGS
+        cp $BAO_SRCS/bin/$PLATFORM/interf_thrott/bao.bin $WRKDIR_IMGS
         ;;
 
     "solo+cc")

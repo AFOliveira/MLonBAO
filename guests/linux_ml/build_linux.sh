@@ -9,6 +9,7 @@ export BUILD_DIR=$ROOT_DIR/build
 export ARCH=aarch64
         
 export BUILDROOT_DEFCFG=$ROOT_DIR/configs/buildroot/tflite.config
+#export BUILDROOT_DEFCFG=$ROOT_DIR/configs/buildroot/torch.config
 
 export CROSS_COMPILE=aarch64-none-elf-
 export WRKDIR_RPI_IMGS=$ROOT_DIR/imgs
@@ -57,7 +58,7 @@ ARCH=arm64 CROSS_COMPILE=$BUILDROOT_DIR/output/host/bin/aarch64-buildroot-linux-
     make
 mkdir -p $ROOT_DIR/rootfs/bin/
 cp perf $ROOT_DIR/rootfs/bin/
-#cp perf $ROOT_DIR/rootfs
+cp perf $ROOT_DIR/rootfs
 
 cd $ROOT_DIR/buildroot
 make linux-reconfigure all
