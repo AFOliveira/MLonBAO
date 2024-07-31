@@ -30,7 +30,6 @@ This repository contains the analysis and findings of the project "Impact Analys
 - `results/`: Results of the experiments.
 - `scripts/`: Scripts for setting up and running the experiments.
 - `wrkdir/imgs/`: Working directory images.
-- `.gitmodules`: Git submodules configuration file.
 
 ### Prerequisites
 
