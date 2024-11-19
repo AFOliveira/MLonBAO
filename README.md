@@ -1,20 +1,22 @@
-# MLonBAO
+# IA&AI
 
-## Impact Analysis of Contention on Multi-Core Platforms for Real-Time Critical Applications and Machine Learning
+## Interference Analysis in Multi-Core Embedded AI Systems
 
 ## Authors
 
-- Afonso Oliveira (PG53599)
-- Gonçalo Moreira (PG53841)
-
-## Supervision
-
+- Afonso Oliveira
+- Gonçalo Moreira
 - Diogo Costa
-- Sandro Pinto
+- Prof. Tiago Gomes
+- Prof. Sandro Pinto
 
 ## Overview
 
-This repository contains the analysis and findings of the project "Impact Analysis of Contention on Multi-Core Platforms for Real-Time Critical Applications and Machine Learning." The project investigates the effects of hardware contention on the performance of machine learning (ML) applications running on multicore platforms. The study focuses on mixed-criticality systems (MCS) and explores techniques to mitigate the impact of contention using the Bao hypervisor.
+This repository contains the analysis and findings of the paper  "IA&AI: Interference Analysis in Multi-core Embedded AI Systems." 
+
+## Abstract
+Significant advances in Artificial Intelligence (AI) over the past decade have opened new aisles of exploration for industries such as automotive and industrial robotics, leading to the widespread adoption of AI. To meet the demands of modern applications, embedded platforms have evolved into highly heterogeneous designs, transitioning from simple microcontroller-based systems to intricate platforms with multiple processor units and hardware accelerators. Driven by Size, Weight, Power, and Cost (SWAP-C) constraints, both industry and academia have focused on consolidating systems with different criticality levels, referred to as mixed-criticality systems (MCS), onto a single hardware platform. However, the co-existence of heterogeneous designs can still raise several safety and security issues, which can be addressed through secure computer architectures and hypervisor technologies that provide spatial and temporal isolation features. This paper discusses the impact of MCS consolidation on AI-based applications. The setup uses the Bao hypervisor to deploy two virtual machines (VMs): one VM hosting TensorFlow Lite to run AI workloads on a Linux system, and the other supporting a bare-metal memory-intensive application. The study involves running Convolutional Neural Networks (CNNs) and Deep Neural Networks (DNNs) machine learning models (ML), based on two widely used classification datasets: MNIST and CIFAR-10, while assessing the impact of sharing platform resources with a memory-intensive application. Empirical results show that contention on last-level cache and system bus can significantly impact the inference process of an ML model up to 6.39x.
+
 
 ## Contents
 
@@ -30,10 +32,3 @@ This repository contains the analysis and findings of the project "Impact Analys
 - `results/`: Results of the experiments.
 - `scripts/`: Scripts for setting up and running the experiments.
 - `wrkdir/imgs/`: Working directory images.
-
-### Prerequisites
-
-- Python 3.10 or higher
-- TensorFlow
-- Bao hypervisor
-
